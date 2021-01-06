@@ -20,9 +20,10 @@ type GlobalConfiguration struct {
 		Port     string `yaml:"debug.port"`
 		Endpoint string `yaml:"debug.endpoint"`
 	}
-	DB                DBConfiguration
+	MYSQL             DBConfiguration
 	Vault             VaultConfiguration
-	MultiInstanceMode bool
+	MultiInstanceMode bool `yaml:"multiInstanceMode"`
+	Log               LoggingConfig
 }
 
 // DBConfiguration struct
@@ -40,4 +41,10 @@ type DBConfiguration struct {
 type VaultConfiguration struct {
 	Address string `yaml:"vault.address"`
 	Token   string `yaml:"vault.token"`
+}
+
+// LoggingConfig struct
+type LoggingConfig struct {
+	DisableColors    bool `mapstructure:"disable_colors" split_words:"true" json:"disable_colors" yaml:"log.disableColors"`
+	QuoteEmptyFields bool `mapstructure:"quote_empty_fields" split_words:"true" json:"quote_empty_fields" yaml:"log.quoteEmptyFields"`
 }

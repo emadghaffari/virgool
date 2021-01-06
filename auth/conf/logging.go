@@ -17,32 +17,17 @@ var (
 	Logger *logrus.Logger
 )
 
-// LoggingConfig struct
-type LoggingConfig struct {
-	Level            string                 `mapstructure:"log_level" json:"log_level"`
-	File             string                 `mapstructure:"log_file" json:"log_file"`
-	DisableColors    bool                   `mapstructure:"disable_colors" split_words:"true" json:"disable_colors"`
-	QuoteEmptyFields bool                   `mapstructure:"quote_empty_fields" split_words:"true" json:"quote_empty_fields"`
-	TSFormat         string                 `mapstructure:"ts_format" json:"ts_format"`
-	Fields           map[string]interface{} `mapstructure:"fields" json:"fields"`
-	UseNewLogger     bool                   `mapstructure:"use_new_logger",split_words:"true"`
-}
-
 // ConfigureLogging func
 func ConfigureLogging(config *LoggingConfig) {
 
 	once.Do(func() {
 		Logger = logrus.New()
 
-		tsFormat := time.RFC3339Nano
-		if config.TSFormat != "" {
-			tsFormat = config.TSFormat
-		}
 		// always use the full timestamp
 		Logger.SetFormatter(&logrus.TextFormatter{
 			FullTimestamp:    true,
 			DisableTimestamp: false,
-			TimestampFormat:  tsFormat,
+			TimestampFormat:  time.RFC3339Nano,
 			DisableColors:    config.DisableColors,
 			QuoteEmptyFields: config.QuoteEmptyFields,
 		})
