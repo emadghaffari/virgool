@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package pb;
+
+
+
+//The Auth service definition.
+service Auth {
+ rpc Register (RegisterRequest) returns (RegisterReply);
+ rpc LoginUP  (LoginUPRequest ) returns (LoginUPReply );
+ rpc LoginP   (LoginPRequest  ) returns (LoginPReply  );
+ rpc Verify   (VerifyRequest  ) returns (VerifyReply  );
+}
+
+message RegisterRequest {
+    string Username = 1;
+    string Password = 2;
+    string Name = 3;
+    string LastName = 4;
+    string Phone = 5;
+    string Email = 6;
+}
+
+message RegisterReply {
+    string Message = 1;
+    string Status = 2;
+}
+
+message LoginUPRequest {
+    string Username = 1;
+    string Password = 2;
+}
+
+message LoginUPReply {
+    string Username = 1;
+    string Name = 2;
+    string LastName = 3;
+    string Phone = 4;
+    string Email = 5;
+    string Token = 6;
+    Role Role = 7;
+}
+
+message LoginPRequest {
+    string Phone = 1;
+}
+
+message LoginPReply {
+    string Message = 1;
+    string Status = 2;
+}
+
+message VerifyRequest {
+    string Token = 1;
+    string Type = 2;
+    string Device = 3;
+}
+
+message VerifyReply {
+    string Username = 1;
+    string Name = 2;
+    string LastName = 3;
+    string Phone = 4;
+    string Email = 5;
+    string Token = 6;
+    Role Role = 7;
+}
+
+message Role {
+    string Name = 1;
+    repeated Permission Permissions = 2;        
+}
+
+message Permission {
+    string Name = 1;
+}
