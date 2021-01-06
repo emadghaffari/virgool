@@ -46,11 +46,13 @@ func Run() {
 		return
 	}
 
+	conf.ConfigureLogging(&conf.GlobalConfigs.Log)
+
 	// connect to database
-	// if err := initDatabase(); err != nil {
-	// 	logger.Log("exit")
-	// 	return
-	// }
+	if err := initDatabase(); err != nil {
+		logger.Log("exit")
+		return
+	}
 
 	fs.Parse(os.Args[1:])
 
@@ -72,6 +74,7 @@ func Run() {
 
 }
 
+// initHttpHandler func
 func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {}
 
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
@@ -147,5 +150,6 @@ func initDatabase() error {
 }
 
 func initConfigs() error {
-	return env.LoadGlobalConfiguration("config.yaml")
+	return env.LoadGlobalConfiguration("auth/config.yaml")
+	// os.Getenv("config_file")
 }
