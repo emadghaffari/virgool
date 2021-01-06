@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -33,18 +34,18 @@ type msql struct {
 
 func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger) error {
 	once.Do(func() {
-		if config.DB.Namespace != "" {
-			namespace = config.DB.Namespace
+		if config.MYSQL.Namespace != "" {
+			namespace = config.MYSQL.Namespace
 		}
 
 		datasource := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
-			config.DB.Username,
-			config.DB.Password,
-			config.DB.Host,
-			config.DB.Schema,
+			config.MYSQL.Username,
+			config.MYSQL.Password,
+			config.MYSQL.Host,
+			config.MYSQL.Schema,
 		)
 
-		m.DB, err = gorm.Open(config.DB.Driver, datasource)
+		m.DB, err = gorm.Open(config.MYSQL.Driver, datasource)
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "opening database connection"))
 		}
@@ -57,7 +58,7 @@ func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger)
 			log.Fatal(errors.Wrap(err, "checking database connection"))
 		}
 
-		if config.DB.Automigrate {
+		if config.MYSQL.Automigrate {
 			migDB := m.DB.New()
 			migDB.SetLogger(model.NewDBLogger(log.WithField("task", "migration")))
 			if err := m.AutoMigrate(); err != nil {
@@ -75,6 +76,8 @@ func (m *msql) AutoMigrate() error {
 		model.User{},
 		model.Role{},
 		model.Permission{},
+		model.Media{},
+		model.Mediaables{},
 	)
 	return sql.Error
 }

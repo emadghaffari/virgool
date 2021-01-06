@@ -8,7 +8,7 @@ import (
 
 // User struct
 type User struct {
-	ID        uint64    `json:"-" sql:"index"`
+	ID        uint64    `json:"id" sql:"index"`
 	Username  string    `json:"username,omitempty"`
 	Password  *string   `json:"-,omitempty"`
 	Name      string    `json:"name,omitempty"`
@@ -16,7 +16,8 @@ type User struct {
 	Phone     string    `json:"phone,omitempty"`
 	Email     string    `json:"email,omitempty"`
 	Token     *string   `json:"token,omitempty"`
-	Role      *pb.Role  `json:"roles,omitempty" gorm:"foreignKey:id"`
+	RoleID    uint64    `json:"-"`
+	Role      *pb.Role  `json:"roles,omitempty" gorm:"foreignKey:id;references:RoleID"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -37,4 +38,23 @@ type Permission struct {
 	Role      []*Role   `json:"-" gorm:"many2many:roles_permissions;"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// Media struct
+type Media struct {
+	ID          uint64    `json:"-" sql:"index"`
+	URL         string    `json:"url"`
+	Type        string    `json:"type"`
+	Title       *string   `json:"title,omitempty"`
+	Description *string   `json:"description,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// Mediaables struct
+type Mediaables struct {
+	ID            uint64 `json:"-" sql:"index"`
+	MediaID       uint64 `json:"-"`
+	MediaableID   uint64 `json:"-"`
+	MediaableType string `json:"-"`
 }
