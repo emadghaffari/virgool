@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 services:
   auth:
     build:
@@ -6,8 +6,113 @@ services:
       dockerfile: auth/Dockerfile
     restart: always
     volumes:
-      - ./auth:/go/src/github.com/emadghaffari/virgool
-    container_name: auth
+      - .:/go/src/github.com/emadghaffari/virgool
+    container_name: virgool_auth
     ports:
-      - 88800:8081
-      - 88801:8082
+      - 8800:8081
+      - 8801:8082
+  # database container
+  db:
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    secrets:
+      - db-password
+      - db-user
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db-password
+      MYSQL_USER_FILE: /run/secrets/db-user
+      MYSQL_DATABASE: golang
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p$$MYSQL_ROOT_PASSWORD_FILE",
+        ]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - mysql-db:/var/lib/mysql
+  # phpmyadmin
+  phpmyadmin:
+    image: phpmyadmin
+    secrets:
+      - db-password
+      - db-user
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_PASSWORD_FILE=/run/secrets/db-password
+      - PMA_USER_FILE=/run/secrets/db-user
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+    ports:
+      - 9595:80
+    volumes:
+      - /sessions
+    labels:
+      - traefik.http.routers.phpmyadmin.rule=Host(`db.localhost`)
+      - traefik.http.services.phpmyadmin.loadbalancer.server.port=80
+
+  vault:
+    build:
+      context: ./docker/vault/vault
+      dockerfile: Dockerfile
+    ports:
+      - 8200:8200
+    volumes:
+      - ./docker/vault/vault/config:/vault/config
+      - ./docker/vault/vault/policies:/vault/policies
+      - ./docker/vault/vault/data:/vault/data
+      - ./docker/vault/vault/logs:/vault/logs
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://127.0.0.1:8200
+    command: server -config=/vault/config/vault-config.json
+    cap_add:
+      - IPC_LOCK
+    depends_on:
+      - consul
+
+  consul-worker:
+    build:
+      context: ./docker/vault/consul
+      dockerfile: Dockerfile
+    command: agent -server -join consul -config-file=/consul/config/config.json
+    volumes:
+      - ./docker/vault/consul/config/consul-config.json:/consul/config/config.json
+    depends_on:
+      - consul
+
+  consul:
+    build:
+      context: ./docker/vault/consul
+      dockerfile: Dockerfile
+    ports:
+      - 8500:8500
+    command: agent -server -bind 0.0.0.0 -client 0.0.0.0 -bootstrap-expect 1 -config-file=/consul/config/config.json
+    volumes:
+      - ./docker/vault/consul/config/consul-config.json:/consul/config/config.json
+      - ./docker/vault/consul/data:/consul/data
+# secrets files
+secrets:
+  db-password:
+    file: ./docker/database/mysql/password
+  db-user:
+    file: ./docker/database/mysql/user
+
+volumes:
+  mysql-db:
