@@ -6,7 +6,7 @@ services:
       dockerfile: auth/Dockerfile
     restart: always
     volumes:
-      - ./auth:/go/src/github.com/emadghaffari/virgool
+      - .:/go/src/github.com/emadghaffari/virgool
     container_name: virgool_auth
     depends_on:
       - db
@@ -25,7 +25,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db-password
       MYSQL_USER_FILE: /run/secrets/db-user
-      MYSQL_DATABASE: golang
+      MYSQL_DATABASE: virgool
     healthcheck:
       test:
         [

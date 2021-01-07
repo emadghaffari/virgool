@@ -193,13 +193,8 @@ func initConfigs() error {
 		logrus.Warn(err.Error())
 	}
 
-	fmt.Println("*********")
-	fmt.Println(dir + "/auth")
-	fmt.Println("*********")
-
-	return env.LoadGlobalConfiguration(dir + "/auth")
-	// return env.LoadGlobalConfiguration("auth/config.yaml")
-	// os.Getenv("config_file")
+	// read from file
+	return env.LoadGlobalConfiguration(dir + "/auth/config.yaml")
 }
 
 func initJaeger() (io.Closer, error) {
