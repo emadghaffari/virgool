@@ -1,4 +1,4 @@
-version: "3"
+version: "3.3"
 services:
   auth:
     build:
@@ -38,7 +38,7 @@ services:
       interval: 20s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      # start_period: 40s
     volumes:
       - mysql-db:/var/lib/mysql
   # phpmyadmin
@@ -57,16 +57,12 @@ services:
       interval: 20s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      # start_period: 40s
     restart: always
     ports:
       - 9595:80
     volumes:
       - /sessions
-    labels:
-      - traefik.http.routers.phpmyadmin.rule=Host(`db.localhost`)
-      - traefik.http.services.phpmyadmin.loadbalancer.server.port=80
-
   vault:
     build:
       context: ./docker/vault/vault
