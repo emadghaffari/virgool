@@ -16,7 +16,7 @@ import (
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	g = &group.Group{}
-	initHttpHandler(endpoints, g)
+	initHTTPHandler(endpoints, g)
 	initGRPCHandler(endpoints, g)
 	return g
 }

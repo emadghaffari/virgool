@@ -12,10 +12,12 @@ import (
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
+	http1 "github.com/go-kit/kit/transport/http"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
@@ -29,6 +31,7 @@ import (
 	endpoint "github.com/emadghaffari/virgool/auth/pkg/endpoint"
 	grpc "github.com/emadghaffari/virgool/auth/pkg/grpc"
 	pb "github.com/emadghaffari/virgool/auth/pkg/grpc/pb"
+	pkghttp "github.com/emadghaffari/virgool/auth/pkg/http"
 	service "github.com/emadghaffari/virgool/auth/pkg/service"
 )
 
@@ -86,9 +89,20 @@ func Run() {
 
 }
 
-// initHttpHandler func
-func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {}
-
+// initHTTPHandler func
+func initHTTPHandler(endpoints endpoint.Endpoints, g *group.Group) {
+	httpHandler := pkghttp.NewHTTPHandler(endpoints, map[string][]http1.ServerOption{})
+	httpListener, err := net.Listen("tcp", *httpAddr)
+	if err != nil {
+		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
+	}
+	g.Add(func() error {
+		logger.Log("transport", "HTTP", "addr", *httpAddr)
+		return http.Serve(httpListener, httpHandler)
+	}, func(error) {
+		httpListener.Close()
+	})
+}
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultGRPCOptions(logger, tracer)
 	// Add your GRPC options here
@@ -173,7 +187,14 @@ func initDatabase() error {
 
 // FIXME fix the config file path
 func initConfigs() error {
-	return env.LoadGlobalConfiguration("auth/config.yaml")
+	// Current working directory
+	dir, err := os.Getwd()
+	if err != nil {
+		logrus.Warn(err.Error())
+	}
+
+	return env.LoadGlobalConfiguration(dir)
+	// return env.LoadGlobalConfiguration("auth/config.yaml")
 	// os.Getenv("config_file")
 }
 
