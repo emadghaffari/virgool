@@ -34,7 +34,7 @@ func ConfigureLogging(config *LoggingConfig) {
 
 		Logger.SetLevel(logrus.InfoLevel)
 
-		if viper.GetString("Environment") == "production" {
+		if viper.GetString("environment") == "production" {
 			// Log as JSON instead of the default ASCII formatter.
 			f, _ := os.OpenFile(fmt.Sprintf("logs/%s.log", time.Now().Local().Format("2006-01-02")), os.O_CREATE|os.O_APPEND|os.O_RDWR, 0777)
 			Logger.SetFormatter(&logrus.JSONFormatter{})
