@@ -45,6 +45,6 @@ type VaultConfiguration struct {
 
 // LoggingConfig struct
 type LoggingConfig struct {
-	DisableColors    bool `mapstructure:"disable_colors" split_words:"true" json:"disable_colors" yaml:"log.disableColors"`
-	QuoteEmptyFields bool `mapstructure:"quote_empty_fields" split_words:"true" json:"quote_empty_fields" yaml:"log.quoteEmptyFields"`
+	DisableColors    bool `json:"disable_colors" yaml:"log.disableColors"`
+	QuoteEmptyFields bool `json:"quote_empty_fields" yaml:"log.quoteEmptyFields"`
 }
