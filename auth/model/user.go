@@ -9,12 +9,12 @@ import (
 // User struct
 type User struct {
 	ID        uint64       `json:"id" gorm:"autoIncrementIncrement"`
-	Username  string       `json:"username,omitempty"`
+	Username  string       `json:"username,omitempty" gorm:"unique;not null"`
 	Password  *string      `json:"-,omitempty"`
 	Name      string       `json:"name,omitempty"`
 	LastName  string       `json:"last_name,omitempty"`
-	Phone     string       `json:"phone,omitempty"`
-	Email     string       `json:"email,omitempty"`
+	Phone     string       `json:"phone,omitempty" gorm:"unique;not null"`
+	Email     string       `json:"email,omitempty" gorm:"unique;not null"`
 	Token     string       `json:"token,omitempty"`
 	RoleID    uint64       `json:"-"`
 	Role      *pb.Role     `json:"roles,omitempty" gorm:"foreignKey:id;references:RoleID"`

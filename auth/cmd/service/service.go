@@ -133,8 +133,8 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 
 }
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
-	// mw = []service.Middleware{}
-	// mw = addDefaultServiceMiddleware(logger, mw)
+	mw = []service.Middleware{}
+	mw = append(mw, service.LoggingMiddleware(logger))
 	// Append your middleware here
 
 	return

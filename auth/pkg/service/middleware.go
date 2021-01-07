@@ -3,8 +3,9 @@ package service
 import (
 	"context"
 
-	model "github.com/emadghaffari/virgool/auth/model"
 	log "github.com/go-kit/kit/log"
+
+	model "github.com/emadghaffari/virgool/auth/model"
 )
 
 // Middleware describes a service middleware.
@@ -21,13 +22,18 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 	return func(next AuthService) AuthService {
 		return &loggingMiddleware{logger, next}
 	}
-
 }
+
+// FIXME add middlewares for service
 
 func (l loggingMiddleware) Register(ctx context.Context, Username string, Password string, Name string, LastName string, Phone string, Email string) (Response model.User, err error) {
 	defer func() {
 		l.logger.Log("method", "Register", "Username", Username, "Password", Password, "Name", Name, "LastName", LastName, "Phone", Phone, "Email", Email, "Response", Response, "err", err)
 	}()
+	// if Username == "" || Password == "" || Name == "" || LastName == "" || Phone == "" || Email == "" {
+	// 	return model.User{}, fmt.Errorf("Please fill the required values")
+	// }
+
 	return l.next.Register(ctx, Username, Password, Name, LastName, Phone, Email)
 }
 func (l loggingMiddleware) LoginUP(ctx context.Context, Username string, Password string) (Response model.User, err error) {
