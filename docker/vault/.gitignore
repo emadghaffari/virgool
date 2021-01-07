@@ -2,6 +2,6 @@
 !vault/data/.gitkeep
 /vault/logs/*
 !vault/logs/.gitkeep
-consul/data/*
+/consul/data/*
 !consul/data/.gitkeep
-consul/data/
+/consul/data/
