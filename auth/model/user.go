@@ -15,7 +15,7 @@ type User struct {
 	LastName  string    `json:"last_name,omitempty"`
 	Phone     string    `json:"phone,omitempty"`
 	Email     string    `json:"email,omitempty"`
-	Token     *string   `json:"token,omitempty"`
+	Token     string    `json:"token,omitempty"`
 	RoleID    uint64    `json:"-"`
 	Role      *pb.Role  `json:"roles,omitempty" gorm:"foreignKey:id;references:RoleID"`
 	CreatedAt time.Time `json:"created_at"`
