@@ -33,7 +33,7 @@ func decodeRegisterRequest(_ context.Context, r interface{}) (interface{}, error
 // encodeRegisterResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
 func encodeRegisterResponse(_ context.Context, r interface{}) (interface{}, error) {
-	rs := r.(*endpoint.RegisterResponse)
+	rs := r.(endpoint.RegisterResponse)
 
 	if rs.Err != nil {
 		return &pb.RegisterReply{
@@ -74,7 +74,7 @@ func decodeLoginUPRequest(_ context.Context, r interface{}) (interface{}, error)
 // encodeLoginUPResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
 func encodeLoginUPResponse(_ context.Context, r interface{}) (interface{}, error) {
-	rs := r.(*endpoint.LoginUPResponse)
+	rs := r.(endpoint.LoginUPResponse)
 
 	if rs.Err != nil {
 		return &pb.LoginUPReply{}, fmt.Errorf("Error: %s ", rs.Err.Error())
@@ -86,7 +86,7 @@ func encodeLoginUPResponse(_ context.Context, r interface{}) (interface{}, error
 		LastName: rs.Response.LastName,
 		Phone:    rs.Response.Phone,
 		Email:    rs.Response.Email,
-		Token:    *rs.Response.Token,
+		Token:    rs.Response.Token,
 		Role:     rs.Response.Role,
 	}, nil
 }
@@ -116,7 +116,7 @@ func decodeLoginPRequest(_ context.Context, r interface{}) (interface{}, error) 
 // encodeLoginPResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
 func encodeLoginPResponse(_ context.Context, r interface{}) (interface{}, error) {
-	rs := r.(*endpoint.LoginPResponse)
+	rs := r.(endpoint.LoginPResponse)
 
 	if rs.Err != nil {
 		return &pb.LoginPReply{}, fmt.Errorf("Error: %s ", rs.Err.Error())
@@ -154,7 +154,7 @@ func decodeVerifyRequest(_ context.Context, r interface{}) (interface{}, error) 
 // encodeVerifyResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
 func encodeVerifyResponse(_ context.Context, r interface{}) (interface{}, error) {
-	rs := r.(*endpoint.VerifyResponse)
+	rs := r.(endpoint.VerifyResponse)
 
 	if rs.Err != nil {
 		return &pb.VerifyReply{}, fmt.Errorf("Error: %s ", rs.Err.Error())
@@ -166,7 +166,7 @@ func encodeVerifyResponse(_ context.Context, r interface{}) (interface{}, error)
 		LastName: rs.Response.LastName,
 		Phone:    rs.Response.Phone,
 		Email:    rs.Response.Email,
-		Token:    *rs.Response.Token,
+		Token:    rs.Response.Token,
 		Role:     rs.Response.Role,
 	}, nil
 }
