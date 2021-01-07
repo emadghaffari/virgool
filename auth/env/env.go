@@ -1,6 +1,7 @@
 package env
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -10,6 +11,20 @@ import (
 	"github.com/emadghaffari/virgool/auth/conf"
 	"github.com/emadghaffari/virgool/auth/database/vault"
 )
+
+// LoadGlobalConfiguration returns configs
+func LoadGlobalConfiguration(filename string) error {
+
+	if err := localEnvironment(filename); err != nil {
+		return err
+	}
+
+	if viper.GetString("environment") == "production" {
+		return vaultEnvironment()
+	}
+
+	return nil
+}
 
 func localEnvironment(filename string) error {
 
@@ -46,27 +61,20 @@ func localEnvironment(filename string) error {
 }
 
 func vaultEnvironment() error {
-	conf.GlobalConfigs.Vault.Address = os.Getenv("vault_address")
-	conf.GlobalConfigs.Vault.Token = os.Getenv("vault_token")
-
 	// Vault connection
 	if err := vault.Database.New(conf.GlobalConfigs); err != nil {
 		fmt.Fprintf(os.Stderr, ": %v\n", err)
-		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Failed to connect to vault: %s", err),
-		}).Fatal(fmt.Sprintf("Failed to connect to vault: %s", err))
 		return err
 	}
-	return nil
-}
 
-// LoadGlobalConfiguration returns configs
-func LoadGlobalConfiguration(filename string) error {
-	if os.Getenv("environment") == "production" {
-		return vaultEnvironment()
+	r, err := vault.Database.Read(viper.GetString("vault.configuration"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, ": %v\n", err)
+		return err
 	}
 
-	if err := localEnvironment(filename); err != nil {
+	if err := json.Unmarshal([]byte(r.Data["confs"].(string)), &conf.GlobalConfigs); err != nil {
+		fmt.Fprintf(os.Stderr, ": %v\n", err)
 		return err
 	}
 
