@@ -24,6 +24,8 @@ type GlobalConfiguration struct {
 	Vault             VaultConfiguration
 	MultiInstanceMode bool `yaml:"multiInstanceMode"`
 	Log               LoggingConfig
+	Service           Service
+	Jaeger            Jaeger
 }
 
 // DBConfiguration struct
@@ -47,4 +49,15 @@ type VaultConfiguration struct {
 type LoggingConfig struct {
 	DisableColors    bool `json:"disable_colors" yaml:"log.disableColors"`
 	QuoteEmptyFields bool `json:"quote_empty_fields" yaml:"log.quoteEmptyFields"`
+}
+
+// Service details
+type Service struct {
+	Name string `yaml:"service.name"`
+}
+
+// Jaeger tracer
+type Jaeger struct {
+	HostPort string `yaml:"jaeger.hostPort"`
+	LogSpans bool   `yaml:"jaeger.logSpans"`
 }
