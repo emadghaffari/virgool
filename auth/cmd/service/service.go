@@ -3,6 +3,7 @@ package service
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -11,10 +12,16 @@ import (
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
+	"github.com/uber/jaeger-lib/metrics"
 	grpc1 "google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/emadghaffari/virgool/auth/conf"
 	"github.com/emadghaffari/virgool/auth/database/mysql"
@@ -48,7 +55,7 @@ func Run() {
 
 	conf.ConfigureLogging(&conf.GlobalConfigs.Log)
 
-	// connect to database
+	// connect to local database
 	if err := initDatabase(); err != nil {
 		logger.Log("exit")
 		return
@@ -63,7 +70,12 @@ func Run() {
 
 	//  Determine which tracer to use. We'll pass the tracer to all the
 	// components that use it, as a dependency
-	// TODO jaeger tracer
+	closer, err := initJaeger()
+	if err != nil {
+		logger.Log("exit")
+		return
+	}
+	defer closer.Close()
 
 	svc := service.New(getServiceMiddleware(logger))
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
@@ -88,7 +100,17 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}
 	g.Add(func() error {
 		logger.Log("transport", "gRPC", "addr", conf.GlobalConfigs.GRPC.Port)
-		baseServer := grpc1.NewServer()
+
+		// UnaryInterceptor and OpenTracingServerInterceptor for tracer
+		baseServer := grpc1.NewServer(
+			grpc1.UnaryInterceptor(
+				otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
+			),
+		)
+
+		// reflection for evans
+		reflection.Register(baseServer)
+
 		pb.RegisterAuthServer(baseServer, grpcServer)
 		return baseServer.Serve(grpcListener)
 	}, func(error) {
@@ -149,7 +171,43 @@ func initDatabase() error {
 	return mysql.Database.Connect(&conf.GlobalConfigs, conf.Logger)
 }
 
+// FIXME fix the config file path
 func initConfigs() error {
 	return env.LoadGlobalConfiguration("auth/config.yaml")
 	// os.Getenv("config_file")
+}
+
+func initJaeger() (io.Closer, error) {
+	// Sample configuration for testing. Use constant sampling to sample every trace
+	// and enable LogSpan to log every span via configured Logger.
+	cfg := jaegercfg.Configuration{
+		ServiceName: conf.GlobalConfigs.Service.Name,
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans:           conf.GlobalConfigs.Jaeger.LogSpans,
+			LocalAgentHostPort: conf.GlobalConfigs.Jaeger.HostPort,
+		},
+	}
+
+	jLogger := jaegerlog.StdLogger
+	jMetricsFactory := metrics.NullFactory
+
+	// Initialize tracer with a logger and a metrics factory
+	var closer io.Closer
+	var err error
+	tracer, closer, err = cfg.NewTracer(
+		jaegercfg.Logger(jLogger),
+		jaegercfg.Metrics(jMetricsFactory),
+		jaegercfg.ZipkinSharedRPCSpan(true),
+	)
+	if err != nil {
+		logger.Log("during", "Listen", "jaeger", "err", err)
+		return nil, err
+	}
+
+	opentracinggo.SetGlobalTracer(tracer)
+	return closer, nil
 }
