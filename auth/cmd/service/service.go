@@ -185,14 +185,12 @@ func initDatabase() error {
 	return mysql.Database.Connect(&conf.GlobalConfigs, conf.Logger)
 }
 
-// FIXME fix the config file path
 func initConfigs() error {
 	// Current working directory
 	dir, err := os.Getwd()
 	if err != nil {
 		logrus.Warn(err.Error())
 	}
-
 	// read from file
 	return env.LoadGlobalConfiguration(dir + "/auth/config.yaml")
 }

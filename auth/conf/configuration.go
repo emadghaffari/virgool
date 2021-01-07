@@ -36,6 +36,7 @@ type DBConfiguration struct {
 	Schema      string `yaml:"mysql.schema"`
 	Driver      string `yaml:"mysql.driver"`
 	Automigrate bool   `yaml:"mysql.automigrate"`
+	Logger      bool   `yaml:"mysql.logger"`
 	Namespace   string
 }
 

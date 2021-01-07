@@ -50,8 +50,10 @@ func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger)
 			log.Fatal(errors.Wrap(err, "opening database connection"))
 		}
 
-		m.DB.SetLogger(model.NewDBLogger(log))
-		m.DB.LogMode(true)
+		if config.MYSQL.Logger {
+			m.DB.SetLogger(model.NewDBLogger(log))
+			m.DB.LogMode(true)
+		}
 
 		err = m.DB.DB().Ping()
 		if err != nil {
@@ -68,7 +70,7 @@ func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger)
 
 	})
 
-	return nil
+	return err
 }
 
 func (m *msql) AutoMigrate() error {
