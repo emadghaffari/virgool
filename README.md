@@ -3,10 +3,8 @@
 
 
 # exports
-environment="developemtn"
-export config_file="auth/config.yaml"
-
+environment="development"
+for development mode we read from file
 
 environment="production"
-address = "http://vault:8200"
-token = "s.4TnB3ozvkZYlQRTLZAteVivl"
+for production mode we read from file (address and token) then read data from vault
