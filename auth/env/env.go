@@ -78,5 +78,7 @@ func vaultEnvironment() error {
 		return err
 	}
 
+	fmt.Println(conf.GlobalConfigs)
+
 	return nil
 }

@@ -6,8 +6,11 @@ services:
       dockerfile: auth/Dockerfile
     restart: always
     volumes:
-      - .:/go/src/github.com/emadghaffari/virgool
+      - ./auth:/go/src/github.com/emadghaffari/virgool
     container_name: virgool_auth
+    depends_on:
+      - db
+      - vault
     ports:
       - 8800:8081
       - 8801:8082
@@ -63,6 +66,7 @@ services:
       - 9595:80
     volumes:
       - /sessions
+
   vault:
     build:
       context: ./docker/vault/vault

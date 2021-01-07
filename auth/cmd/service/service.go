@@ -193,7 +193,11 @@ func initConfigs() error {
 		logrus.Warn(err.Error())
 	}
 
-	return env.LoadGlobalConfiguration(dir)
+	fmt.Println("*********")
+	fmt.Println(dir + "/auth")
+	fmt.Println("*********")
+
+	return env.LoadGlobalConfiguration(dir + "/auth")
 	// return env.LoadGlobalConfiguration("auth/config.yaml")
 	// os.Getenv("config_file")
 }
