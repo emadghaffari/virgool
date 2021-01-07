@@ -6,8 +6,8 @@ services:
       dockerfile: auth/Dockerfile
     restart: always
     volumes:
-    - .:/go/src/github.com/emadghaffari/virgool
+      - ./auth:/go/src/github.com/emadghaffari/virgool
     container_name: auth
     ports:
-    - 8800:8081
-    - 8801:8082
+      - 88800:8081
+      - 88801:8082
