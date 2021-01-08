@@ -29,6 +29,8 @@ type GlobalConfiguration struct {
 	Log               LoggingConfig
 	Service           Service
 	Jaeger            Jaeger
+	Kafka             Kafka
+	JWT               JWT
 }
 
 // DBConfiguration struct
@@ -70,6 +72,7 @@ type Service struct {
 	Redis struct {
 		SMSDuration         time.Duration `yaml:"service.redis.smsDuration"`
 		SMSCodeVerification time.Duration `yaml:"service.redis.smsCodeVerification"`
+		UserDuration        time.Duration `yaml:"service.redis.userDuration"`
 	}
 }
 
@@ -77,4 +80,31 @@ type Service struct {
 type Jaeger struct {
 	HostPort string `yaml:"jaeger.hostPort"`
 	LogSpans bool   `yaml:"jaeger.logSpans"`
+}
+
+// Kafka struct
+type Kafka struct {
+	Username string   `yaml:"kafka.username"`
+	Password string   `yaml:"kafka.password"`
+	Brokers  []string `yaml:"kafka.brokers"`
+	Version  string   `yaml:"kafka.version"`
+	Group    string   `yaml:"kafka.group"`
+	Assignor string   `yaml:"kafka.assignor"`
+	Oldest   bool     `yaml:"kafka.oldest"`
+	Verbose  bool     `yaml:"kafka.verbose"`
+	Topics   Topic    `yaml:"kafka.topics"`
+	Auth     bool     `yaml:"kafka.auth"`
+	Consumer bool     `yaml:"kafka.consumer"`
+	Producer bool     `yaml:"kafka.producer"`
+}
+
+// Topic struct
+type Topic struct {
+	Notif string `yaml:"kafka.topics.notif"`
+}
+
+// JWT struct
+type JWT struct {
+	RSecret string `yaml:"jwt.rSecret"`
+	Secret  string `yaml:"jwt.secret"`
 }
