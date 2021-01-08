@@ -120,6 +120,21 @@ services:
       - "3333:6831/udp"
       - "3686:16686"
 
+  # redis database
+  redis:
+    hostname: redis
+    image: redis
+
+  # redis ui
+  redis-commander:
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "6546:8081"
+
 # secrets files
 secrets:
   db-password:
