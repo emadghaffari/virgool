@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	mysql "gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	"github.com/emadghaffari/virgool/auth/conf"
 	"github.com/emadghaffari/virgool/auth/model"
@@ -15,14 +15,14 @@ import (
 
 var (
 	// Database var
-	Database  Mysql  = &msql{}
+	Database  Mysqli = &msql{}
 	namespace string = ""
 	err       error
 	once      sync.Once
 )
 
-// Mysql interface
-type Mysql interface {
+// Mysqli interface
+type Mysqli interface {
 	Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger) error
 	GetDatabase() *gorm.DB
 	AutoMigrate() error
@@ -38,31 +38,25 @@ func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger)
 			namespace = config.MYSQL.Namespace
 		}
 
-		datasource := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		conf := &gorm.Config{}
+
+		if config.MYSQL.Logger {
+			conf.Logger = model.NewDBLogger()
+		}
+
+		datasource := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 			config.MYSQL.Username,
 			config.MYSQL.Password,
 			config.MYSQL.Host,
 			config.MYSQL.Schema,
 		)
 
-		m.DB, err = gorm.Open(config.MYSQL.Driver, datasource)
+		m.DB, err = gorm.Open(mysql.Open(datasource), conf)
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "opening database connection"))
 		}
 
-		if config.MYSQL.Logger {
-			m.DB.SetLogger(model.NewDBLogger(log))
-			m.DB.LogMode(true)
-		}
-
-		err = m.DB.DB().Ping()
-		if err != nil {
-			log.Fatal(errors.Wrap(err, "checking database connection"))
-		}
-
 		if config.MYSQL.Automigrate {
-			migDB := m.DB.New()
-			migDB.SetLogger(model.NewDBLogger(log.WithField("task", "migration")))
 			if err := m.AutoMigrate(); err != nil {
 				log.Fatal(errors.Wrap(err, "database automigrate"))
 			}
@@ -81,7 +75,7 @@ func (m *msql) AutoMigrate() error {
 		model.Media{},
 		model.Mediaables{},
 	)
-	return sql.Error
+	return sql
 }
 
 func (m *msql) GetDatabase() *gorm.DB {
