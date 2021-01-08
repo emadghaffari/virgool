@@ -22,9 +22,9 @@ type AuthService interface {
 	// Phone: phone
 	LoginP(ctx context.Context, Phone string) (Response model.User, err error)
 
-	// token: 13649, Type: SMS_CODE, Device: Phone
-	// token: A4613Ac9...., Type: JWT_TOKEN, Device: MACBOOK
-	Verify(ctx context.Context, Token, Type, Device string) (Response model.User, err error)
+	// token: 09355960597, Type: SMS_CODE, Code: 31649
+	// token: A4613Ac9...., Type: JWT_TOKEN, Code: ....
+	Verify(ctx context.Context, Token, Type, Code string) (Response model.User, err error)
 }
 
 type basicAuthService struct{}
@@ -134,14 +134,30 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 
 	return Response, err
 }
-func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string, Device string) (Response model.User, err error) {
+func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string, Code string) (Response model.User, err error) {
+	var dst string
 
-	// TODO store code in redis for every (10sec) for each requset to notif service
+	// check the token exists in redis or not
+	// example:
+	// Token == Phone and Phone exists in Redis then you can check SMS Status
+	if err := redis.Database.Get(context.Background(), Token, &dst); err != nil {
+		return model.User{}, fmt.Errorf("please check your identity")
+	}
+
+	// check for sended Notification before
 	// if code exists do not send code to notif service
-	// if code not exists in {redis} then store into redis and send code to notif service
+	if err := redis.Database.Get(context.Background(), Token+"_"+Type, &dst); err == nil && dst == "NOTIFICATION" {
+		return model.User{}, fmt.Errorf("You have tried before, please wait a minute")
+	}
 
-	// TODO send code{Token} to notif service
-	// response for verify user something like [user_id:"1",code: "---", status:"VERIFY | BANDED | ..."]
+	// if code not exists in {redis} then store into redis and send code to notif service
+	// store code in redis for every (10sec) for each requset to notif service
+	if err := redis.Database.Set(context.Background(), Token+"_"+Type, "NOTIFICATION", time.Second*10); err != nil {
+		return model.User{}, err
+	}
+
+	// TODO code{Token} to notif service
+	// response for verify user something like [code: "---", status:"VERIFY | BANDED | ..."]
 	// then we can say user is verified or not!
 
 	return Response, err

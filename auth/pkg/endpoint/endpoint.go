@@ -3,9 +3,10 @@ package endpoint
 import (
 	"context"
 
+	endpoint "github.com/go-kit/kit/endpoint"
+
 	model "github.com/emadghaffari/virgool/auth/model"
 	service "github.com/emadghaffari/virgool/auth/pkg/service"
-	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 // RegisterRequest collects the request parameters for the Register method.
@@ -100,9 +101,9 @@ func (r LoginPResponse) Failed() error {
 
 // VerifyRequest collects the request parameters for the Verify method.
 type VerifyRequest struct {
-	Token  string `json:"token"`
-	Type   string `json:"type"`
-	Device string `json:"device"`
+	Token string `json:"token"`
+	Type  string `json:"type"`
+	Code  string `json:"code"`
 }
 
 // VerifyResponse collects the response parameters for the Verify method.
@@ -115,7 +116,7 @@ type VerifyResponse struct {
 func MakeVerifyEndpoint(s service.AuthService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(VerifyRequest)
-		Response, err := s.Verify(ctx, req.Token, req.Type, req.Device)
+		Response, err := s.Verify(ctx, req.Token, req.Type, req.Code)
 		return VerifyResponse{
 			Err:      err,
 			Response: Response,
@@ -176,11 +177,11 @@ func (e Endpoints) LoginP(ctx context.Context, Phone string) (Response model.Use
 }
 
 // Verify implements Service. Primarily useful in a client.
-func (e Endpoints) Verify(ctx context.Context, Token string, Type string, Device string) (Response model.User, err error) {
+func (e Endpoints) Verify(ctx context.Context, Token string, Type string, Code string) (Response model.User, err error) {
 	request := VerifyRequest{
-		Device: Device,
-		Token:  Token,
-		Type:   Type,
+		Code:  Code,
+		Token: Token,
+		Type:  Type,
 	}
 	response, err := e.VerifyEndpoint(ctx, request)
 	if err != nil {

@@ -51,9 +51,9 @@ func (l loggingMiddleware) LoginP(ctx context.Context, Phone string) (Response m
 	}()
 	return l.next.LoginP(ctx, Phone)
 }
-func (l loggingMiddleware) Verify(ctx context.Context, Token string, Type string, Device string) (Response model.User, err error) {
+func (l loggingMiddleware) Verify(ctx context.Context, Token string, Type string, Code string) (Response model.User, err error) {
 	defer func() {
-		l.logger.Log("method", "Verify", "Token", Token, "Type", Type, "Device", Device, "Response", Response, "err", err)
+		l.logger.Log("method", "Verify", "Token", Token, "Type", Type, "Code", Code, "Response", Response, "err", err)
 	}()
-	return l.next.Verify(ctx, Token, Type, Device)
+	return l.next.Verify(ctx, Token, Type, Code)
 }

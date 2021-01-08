@@ -154,9 +154,9 @@ func decodeVerifyRequest(_ context.Context, r interface{}) (interface{}, error) 
 	rq := r.(*pb.VerifyRequest)
 
 	return endpoint.VerifyRequest{
-		Token:  rq.Token,
-		Type:   rq.Type,
-		Device: rq.Device,
+		Token: rq.Token,
+		Type:  rq.Type,
+		Code:  rq.Code,
 	}, nil
 }
 
