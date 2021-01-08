@@ -34,6 +34,10 @@ func (l loggingMiddleware) Register(ctx context.Context, Username string, Passwo
 	// 	return model.User{}, fmt.Errorf("Please fill the required values")
 	// }
 
+	// if err := validate.Email(Email); err != nil {
+	// 	return model.User{}, fmt.Errorf("Error: %s", err.Error())
+	// }
+
 	return l.next.Register(ctx, Username, Password, Name, LastName, Phone, Email)
 }
 func (l loggingMiddleware) LoginUP(ctx context.Context, Username string, Password string) (Response model.User, err error) {

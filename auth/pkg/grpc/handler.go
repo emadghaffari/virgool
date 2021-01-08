@@ -80,6 +80,11 @@ func encodeLoginUPResponse(_ context.Context, r interface{}) (interface{}, error
 		return &pb.LoginUPReply{}, fmt.Errorf("Error: %s ", rs.Err.Error())
 	}
 
+	permissions := make([]*pb.Permission, len(rs.Response.Role.Permissions))
+	for _, v := range rs.Response.Role.Permissions {
+		permissions = append(permissions, &pb.Permission{Name: v.Name})
+	}
+
 	return &pb.LoginUPReply{
 		Username: rs.Response.Username,
 		Name:     rs.Response.Name,
@@ -87,7 +92,10 @@ func encodeLoginUPResponse(_ context.Context, r interface{}) (interface{}, error
 		Phone:    rs.Response.Phone,
 		Email:    rs.Response.Email,
 		Token:    rs.Response.Token,
-		Role:     rs.Response.Role,
+		Role: &pb.Role{
+			Name:        rs.Response.Role.Name,
+			Permissions: permissions,
+		},
 	}, nil
 }
 func (g *grpcServer) LoginUP(ctx context1.Context, req *pb.LoginUPRequest) (*pb.LoginUPReply, error) {
@@ -160,6 +168,11 @@ func encodeVerifyResponse(_ context.Context, r interface{}) (interface{}, error)
 		return &pb.VerifyReply{}, fmt.Errorf("Error: %s ", rs.Err.Error())
 	}
 
+	permissions := make([]*pb.Permission, len(rs.Response.Role.Permissions))
+	for _, v := range rs.Response.Role.Permissions {
+		permissions = append(permissions, &pb.Permission{Name: v.Name})
+	}
+
 	return &pb.VerifyReply{
 		Username: rs.Response.Username,
 		Name:     rs.Response.Name,
@@ -167,7 +180,10 @@ func encodeVerifyResponse(_ context.Context, r interface{}) (interface{}, error)
 		Phone:    rs.Response.Phone,
 		Email:    rs.Response.Email,
 		Token:    rs.Response.Token,
-		Role:     rs.Response.Role,
+		Role: &pb.Role{
+			Name:        rs.Response.Role.Name,
+			Permissions: permissions,
+		},
 	}, nil
 }
 func (g *grpcServer) Verify(ctx context1.Context, req *pb.VerifyRequest) (*pb.VerifyReply, error) {
