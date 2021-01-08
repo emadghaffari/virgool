@@ -21,6 +21,7 @@ type GlobalConfiguration struct {
 		Endpoint string `yaml:"debug.endpoint"`
 	}
 	MYSQL             DBConfiguration
+	Redis             RedisConfiguration
 	Vault             VaultConfiguration
 	MultiInstanceMode bool `yaml:"multiInstanceMode"`
 	Log               LoggingConfig
@@ -38,6 +39,15 @@ type DBConfiguration struct {
 	Automigrate bool   `yaml:"mysql.automigrate"`
 	Logger      bool   `yaml:"mysql.logger"`
 	Namespace   string
+}
+
+// RedisConfiguration struct
+type RedisConfiguration struct {
+	Username string `yaml:"redis.username"`
+	Password string `yaml:"redis.password"`
+	DB       int    `yaml:"redis.db"`
+	Host     string `yaml:"redis.host"`
+	Logger   bool   `yaml:"redis.logger"`
 }
 
 // VaultConfiguration struct

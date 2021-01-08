@@ -27,6 +27,7 @@ import (
 
 	"github.com/emadghaffari/virgool/auth/conf"
 	"github.com/emadghaffari/virgool/auth/database/mysql"
+	"github.com/emadghaffari/virgool/auth/database/redis"
 	"github.com/emadghaffari/virgool/auth/env"
 	"github.com/emadghaffari/virgool/auth/model"
 	endpoint "github.com/emadghaffari/virgool/auth/pkg/endpoint"
@@ -66,6 +67,12 @@ func Run() {
 		return
 	}
 
+	// connect to local initRedis
+	if err := initRedis(); err != nil {
+		logger.Log("exit")
+		return
+	}
+
 	// validate
 	model.Validator.New()
 
@@ -97,12 +104,12 @@ func Run() {
 // initHTTPHandler func
 func initHTTPHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	httpHandler := pkghttp.NewHTTPHandler(endpoints, map[string][]http1.ServerOption{})
-	httpListener, err := net.Listen("tcp", *httpAddr)
+	httpListener, err := net.Listen("tcp", conf.GlobalConfigs.HTTP.Port)
 	if err != nil {
 		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "HTTP", "addr", *httpAddr)
+		logger.Log("transport", "HTTP", "addr", conf.GlobalConfigs.HTTP.Port)
 		return http.Serve(httpListener, httpHandler)
 	}, func(error) {
 		httpListener.Close()
@@ -233,4 +240,8 @@ func initJaeger() (io.Closer, error) {
 
 	opentracinggo.SetGlobalTracer(tracer)
 	return closer, nil
+}
+
+func initRedis() error {
+	return redis.Database.Connect(&conf.GlobalConfigs)
 }
