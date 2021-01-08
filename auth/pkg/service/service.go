@@ -35,7 +35,16 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 		return Response, fmt.Errorf(err.Error())
 	}
 
-	// user struct
+	// begins a transaction
+	tx := mysql.Database.GetDatabase().Begin()
+
+	// find the user role
+	role := model.Role{}
+	if err := tx.Table("roles").Where("name = ?", "user").First(&role).Error; err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
+
+	// fill the user model
 	user := model.User{
 		Username: Username,
 		Password: &password,
@@ -43,25 +52,74 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 		LastName: LastName,
 		Phone:    Phone,
 		Email:    Email,
+		RoleID:   role.ID,
 	}
 
-	// try to store
-	if gm := mysql.Database.GetDatabase().Create(&user); gm.Error != nil {
+	// try to store user with model
+	if gm := tx.Create(&user); gm.Error != nil {
 		return Response, fmt.Errorf(err.Error())
 	}
+
+	// TODO add notification service for send SMS to user for register
+	// send user_id to notif service - in notif service generate a code and send notif to client
+
+	// commit a transaction
+	tx.Commit()
 
 	return user, err
 }
 func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Password string) (Response model.User, err error) {
-	// TODO implement the business logic of LoginUP
-	return Response, err
+
+	// begins a transaction
+	tx := mysql.Database.GetDatabase().Begin()
+
+	// find the user user
+	user := model.User{}
+	if err := tx.Table("users").Where("username = ?", Username).First(&user).Error; err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
+
+	// Check Hash Password
+	if ok := new(model.Bcrypt).CheckPasswordHash(Password, *user.Password); !ok {
+		return Response, fmt.Errorf("username or password not found")
+	}
+
+	// commit the transaction
+	tx.Commit()
+
+	return user, err
 }
 func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response model.User, err error) {
-	// TODO implement the business logic of LoginP
+
+	// TODO check phone number for sended code before {DB: Redis - Time: 2min}
+
+	// begins a transaction
+	tx := mysql.Database.GetDatabase().Begin()
+
+	// find the user user
+	user := model.User{}
+	if err := tx.Table("users").Where("phone = ?", Phone).First(&user).Error; err != nil {
+		tx.Rollback()
+		return Response, fmt.Errorf(err.Error())
+	}
+
+	// TODO add notification service for send SMS to user for login
+	// send user_id to notif service - in notif service generate code and send notif to client
+
+	tx.Commit()
+
 	return Response, err
 }
 func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string, Device string) (Response model.User, err error) {
-	// TODO implement the business logic of Verify
+
+	// TODO store code in redis for every (10sec) for each requset to notif service
+	// if code exists do not send code to notif service
+	// if code not exists in {redis} then store into redis and send code to notif service
+
+	// TODO send code{Token} to notif service
+	// response for verify user something like [user_id:"1",code: "---", status:"VERIFY | BANDED | ..."]
+	// then we can say user is verified or not!
+
 	return Response, err
 }
 

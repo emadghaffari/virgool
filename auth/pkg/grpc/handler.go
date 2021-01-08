@@ -44,6 +44,7 @@ func encodeRegisterResponse(_ context.Context, r interface{}) (interface{}, erro
 
 	return &pb.RegisterReply{
 		Message: fmt.Sprintf("Hi %s We Send a SMS for verify your Phone!", rs.Response.Username),
+		Status:  "SUCCESS",
 	}, nil
 }
 
@@ -62,7 +63,6 @@ func makeLoginUPHandler(endpoints endpoint.Endpoints, options []grpc.ServerOptio
 
 // decodeLoginUPResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain LoginUP request.
-// TODO implement the decoder
 func decodeLoginUPRequest(_ context.Context, r interface{}) (interface{}, error) {
 	rq := r.(*pb.LoginUPRequest)
 	return endpoint.LoginUPRequest{
@@ -132,6 +132,7 @@ func encodeLoginPResponse(_ context.Context, r interface{}) (interface{}, error)
 
 	return &pb.LoginPReply{
 		Message: fmt.Sprintf("Hi %s We Send a SMS for verify your Phone!", rs.Response.Username),
+		Status:  "SUCCESS",
 	}, nil
 }
 func (g *grpcServer) LoginP(ctx context1.Context, req *pb.LoginPRequest) (*pb.LoginPReply, error) {

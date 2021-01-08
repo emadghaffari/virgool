@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	log "github.com/go-kit/kit/log"
 
@@ -30,13 +31,11 @@ func (l loggingMiddleware) Register(ctx context.Context, Username string, Passwo
 	defer func() {
 		l.logger.Log("method", "Register", "Username", Username, "Password", Password, "Name", Name, "LastName", LastName, "Phone", Phone, "Email", Email, "Response", Response, "err", err)
 	}()
-	// if Username == "" || Password == "" || Name == "" || LastName == "" || Phone == "" || Email == "" {
-	// 	return model.User{}, fmt.Errorf("Please fill the required values")
-	// }
 
-	// if err := validate.Email(Email); err != nil {
-	// 	return model.User{}, fmt.Errorf("Error: %s", err.Error())
-	// }
+	err = model.Validator.Get().Struct(model.User{Username: Username, Password: &Password, Name: Name, LastName: LastName, Phone: Phone, Email: Email})
+	if err != nil {
+		return model.User{}, fmt.Errorf("Error: %s", err.Error())
+	}
 
 	return l.next.Register(ctx, Username, Password, Name, LastName, Phone, Email)
 }
