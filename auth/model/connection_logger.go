@@ -25,22 +25,27 @@ func NewDBLogger() *DBLogger {
 	}
 }
 
+// LogMode func
 func (l *DBLogger) LogMode(gormlogger.LogLevel) gormlogger.Interface {
 	return l
 }
 
+// Info func
 func (l *DBLogger) Info(ctx context.Context, s string, args ...interface{}) {
 	log.WithContext(ctx).Infof(s, args)
 }
 
+// Warn func
 func (l *DBLogger) Warn(ctx context.Context, s string, args ...interface{}) {
 	log.WithContext(ctx).Warnf(s, args)
 }
 
+// Error func
 func (l *DBLogger) Error(ctx context.Context, s string, args ...interface{}) {
 	log.WithContext(ctx).Errorf(s, args)
 }
 
+// Trace func
 func (l *DBLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	elapsed := time.Since(begin)
 	sql, _ := fc()
