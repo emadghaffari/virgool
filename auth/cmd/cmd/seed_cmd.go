@@ -85,7 +85,7 @@ func users(db *gorm.DB, ids []uint64) {
 			Phone:     seeder.Phone() + seeder.Phone(),
 			Name:      seeder.Name(),
 			LastName:  seeder.Name(),
-			Email:     seeder.Job() + "_" + seeder.Email(),
+			Email:     seeder.Email(),
 			RoleID:    seeder.RandomArray(ids).(reflect.Value).Uint(),
 			UpdatedAt: time.Now(),
 			CreatedAt: time.Now(),
