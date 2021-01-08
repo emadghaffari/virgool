@@ -54,11 +54,13 @@ func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger)
 		m.DB, err = gorm.Open(mysql.Open(datasource), conf)
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "opening database connection"))
+			return
 		}
 
 		if config.MYSQL.Automigrate {
 			if err := m.AutoMigrate(); err != nil {
 				log.Fatal(errors.Wrap(err, "database automigrate"))
+				return
 			}
 		}
 
