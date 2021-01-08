@@ -1,5 +1,6 @@
 version: "3.3"
 services:
+  # auth service
   auth:
     build:
       context: .
@@ -7,13 +8,13 @@ services:
     restart: always
     volumes:
       - .:/go/src/github.com/emadghaffari/virgool
-    container_name: virgool_auth
     depends_on:
       - db
       - vault
     ports:
       - 8800:8081
       - 8801:8082
+
   # database container
   db:
     image: mysql:5.7
@@ -44,6 +45,7 @@ services:
       # start_period: 40s
     volumes:
       - mysql-db:/var/lib/mysql
+
   # phpmyadmin
   phpmyadmin:
     image: phpmyadmin
@@ -67,6 +69,7 @@ services:
     volumes:
       - /sessions
 
+  #vault config
   vault:
     build:
       context: ./docker/vault/vault
@@ -87,6 +90,7 @@ services:
     depends_on:
       - consul
 
+  #consul-worker config
   consul-worker:
     build:
       context: ./docker/vault/consul
@@ -97,6 +101,7 @@ services:
     depends_on:
       - consul
 
+  #consul config
   consul:
     build:
       context: ./docker/vault/consul
@@ -107,6 +112,14 @@ services:
     volumes:
       - ./docker/vault/consul/config/consul-config.json:/consul/config/config.json
       - ./docker/vault/consul/data:/consul/data
+
+  #jaeger config
+  jaeger:
+    image: jaegertracing/all-in-one:1.20
+    ports:
+      - "3333:6831/udp"
+      - "3686:16686"
+
 # secrets files
 secrets:
   db-password:
