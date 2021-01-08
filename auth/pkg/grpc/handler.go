@@ -43,7 +43,7 @@ func encodeRegisterResponse(_ context.Context, r interface{}) (interface{}, erro
 	}
 
 	return &pb.RegisterReply{
-		Message: fmt.Sprintf("Hi %s We Send a SMS for verify your Phone!", rs.Response.Username),
+		Message: fmt.Sprintf("Hi %s %s We Send a SMS for verify your Phone!", rs.Response.Name, rs.Response.LastName),
 		Status:  "SUCCESS",
 	}, nil
 }
@@ -131,7 +131,7 @@ func encodeLoginPResponse(_ context.Context, r interface{}) (interface{}, error)
 	}
 
 	return &pb.LoginPReply{
-		Message: fmt.Sprintf("Hi %s We Send a SMS for verify your Phone!", rs.Response.Username),
+		Message: fmt.Sprintf("Hi %s %s We Send a SMS for verify your Phone!", rs.Response.Name, rs.Response.LastName),
 		Status:  "SUCCESS",
 	}, nil
 }

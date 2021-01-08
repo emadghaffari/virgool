@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/emadghaffari/virgool/auth/conf"
 	"github.com/emadghaffari/virgool/auth/database/mysql"
 	"github.com/emadghaffari/virgool/auth/database/redis"
 	"github.com/emadghaffari/virgool/auth/model"
@@ -67,7 +68,7 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 	// try to store phone fo 2 min
 	// IF Have Error
 	// TODO Change the way the code is sent. Send by email
-	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Minute*2); err != nil {
+	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSDuration)); err != nil {
 		tx.Rollback()
 		return model.User{}, err
 	}
@@ -85,9 +86,9 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
 
-	// find the user user
+	// find the user with username or email
 	user := model.User{}
-	if err := tx.Table("users").Where("username = ?", Username).First(&user).Error; err != nil {
+	if err := tx.Table("users").Where("username = ? OR email = ?", Username, Username).First(&user).Error; err != nil {
 		return Response, fmt.Errorf(err.Error())
 	}
 
@@ -122,7 +123,7 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 	// try to store phone fo 2 min
 	// IF Have Error
 	// TODO Change the way the code is sent. Send by email
-	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Minute*2); err != nil {
+	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSDuration)); err != nil {
 		tx.Rollback()
 		return model.User{}, err
 	}
@@ -132,14 +133,14 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 
 	tx.Commit()
 
-	return Response, err
+	return user, err
 }
 func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string, Code string) (Response model.User, err error) {
 	var dst string
 
 	// check the token exists in redis or not
 	// example:
-	// Token == Phone and Phone exists in Redis then you can check SMS Status
+	// {Token == Phone} and Phone exists in Redis then you can check SMS Status
 	if err := redis.Database.Get(context.Background(), Token, &dst); err != nil {
 		return model.User{}, fmt.Errorf("please check your identity")
 	}
@@ -152,7 +153,7 @@ func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string
 
 	// if code not exists in {redis} then store into redis and send code to notif service
 	// store code in redis for every (10sec) for each requset to notif service
-	if err := redis.Database.Set(context.Background(), Token+"_"+Type, "NOTIFICATION", time.Second*10); err != nil {
+	if err := redis.Database.Set(context.Background(), Token+"_"+Type, "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSCodeVerification)); err != nil {
 		return model.User{}, err
 	}
 

@@ -1,5 +1,7 @@
 package conf
 
+import "time"
+
 // GlobalConfigs var
 var GlobalConfigs GlobalConfiguration
 
@@ -64,7 +66,11 @@ type LoggingConfig struct {
 
 // Service details
 type Service struct {
-	Name string `yaml:"service.name"`
+	Name  string `yaml:"service.name"`
+	Redis struct {
+		SMSDuration         time.Duration `yaml:"service.redis.smsDuration"`
+		SMSCodeVerification time.Duration `yaml:"service.redis.smsCodeVerification"`
+	}
 }
 
 // Jaeger tracer
