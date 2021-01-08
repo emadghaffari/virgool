@@ -147,13 +147,13 @@ func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string
 
 	// check for sended Notification before
 	// if code exists do not send code to notif service
-	if err := redis.Database.Get(context.Background(), Token+"_"+Type, &dst); err == nil && dst == "NOTIFICATION" {
+	if err := redis.Database.Get(context.Background(), Token+"_N", &dst); err == nil && dst == "NOTIFICATION" {
 		return model.User{}, fmt.Errorf("You have tried before, please wait a minute")
 	}
 
 	// if code not exists in {redis} then store into redis and send code to notif service
 	// store code in redis for every (10sec) for each requset to notif service
-	if err := redis.Database.Set(context.Background(), Token+"_"+Type, "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSCodeVerification)); err != nil {
+	if err := redis.Database.Set(context.Background(), Token+"_N", "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSCodeVerification)); err != nil {
 		return model.User{}, err
 	}
 
