@@ -28,6 +28,7 @@ import (
 	"github.com/emadghaffari/virgool/auth/conf"
 	"github.com/emadghaffari/virgool/auth/database/mysql"
 	"github.com/emadghaffari/virgool/auth/env"
+	"github.com/emadghaffari/virgool/auth/model"
 	endpoint "github.com/emadghaffari/virgool/auth/pkg/endpoint"
 	grpc "github.com/emadghaffari/virgool/auth/pkg/grpc"
 	pb "github.com/emadghaffari/virgool/auth/pkg/grpc/pb"
@@ -56,6 +57,7 @@ func Run() {
 		return
 	}
 
+	// conf logger
 	conf.ConfigureLogging(&conf.GlobalConfigs.Log)
 
 	// connect to local database
@@ -63,6 +65,9 @@ func Run() {
 		logger.Log("exit")
 		return
 	}
+
+	// validate
+	model.Validator.New()
 
 	fs.Parse(os.Args[1:])
 

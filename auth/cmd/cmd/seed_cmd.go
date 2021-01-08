@@ -50,7 +50,8 @@ func seed(cmd *cobra.Command, args []string) {
 }
 
 func rolePermission(db *gorm.DB) (ids []uint64) {
-	for i := 0; i < 3; i++ {
+	names := []string{"admin", "user", "operator"}
+	for i := 0; i < len(names); i++ {
 		tx := db.Begin()
 		permissions := []*model.Permission{}
 		for i := 0; i < 10; i++ {
@@ -63,7 +64,7 @@ func rolePermission(db *gorm.DB) (ids []uint64) {
 			permissions = append(permissions, per)
 		}
 		role := &model.Role{
-			Name:        seeder.Name(),
+			Name:        names[i],
 			Permissions: permissions,
 			UpdatedAt:   time.Now(),
 			CreatedAt:   time.Now(),
