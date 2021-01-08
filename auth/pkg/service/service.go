@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/emadghaffari/virgool/auth/conf"
+	"github.com/emadghaffari/virgool/auth/database/kafka"
 	"github.com/emadghaffari/virgool/auth/database/mysql"
 	"github.com/emadghaffari/virgool/auth/database/redis"
 	"github.com/emadghaffari/virgool/auth/model"
@@ -23,7 +24,6 @@ type AuthService interface {
 	// Phone: phone
 	LoginP(ctx context.Context, Phone string) (Response model.User, err error)
 
-	// token: 09355960597, Type: SMS_CODE, Code: 31649
 	// token: A4613Ac9...., Type: JWT_TOKEN, Code: ....
 	Verify(ctx context.Context, Token, Type, Code string) (Response model.User, err error)
 }
@@ -43,7 +43,7 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 
 	// find the user role
 	role := model.Role{}
-	if err := tx.Table("roles").Where("name = ?", "user").First(&role).Error; err != nil {
+	if err := tx.Table("roles").Preload("Permissions").Where("name = ?", "user").First(&role).Error; err != nil {
 		tx.Rollback()
 		return Response, fmt.Errorf(err.Error())
 	}
@@ -56,7 +56,7 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 		LastName: LastName,
 		Phone:    Phone,
 		Email:    Email,
-		RoleID:   role.ID,
+		Role:     role,
 	}
 
 	// try to store user with model
@@ -65,16 +65,35 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 		return Response, fmt.Errorf(err.Error())
 	}
 
-	// try to store phone fo 2 min
+	// try to store phone for 2 min
 	// IF Have Error
-	// TODO Change the way the code is sent. Send by email
 	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSDuration)); err != nil {
 		tx.Rollback()
 		return model.User{}, err
 	}
 
-	// TODO add notification service for send SMS to user for register
+	// generate new jwt token
+	jwt, err := model.JWT.Generate()
+	if err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
+
 	// send user_id to notif service - in notif service generate a code and send notif to client
+	err = kafka.Database.Producer(model.Notification{
+		User:    user,
+		Message: "SMS",
+		JWT:     jwt.AccessToken,
+		KEY:     user.Phone,
+	}, conf.GlobalConfigs.Kafka.Topics.Notif)
+	if err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
+
+	// Store User into redis DB with uuid
+	if err := redis.Database.Set(context.Background(), jwt.AccessUUID, user, time.Duration(conf.GlobalConfigs.Service.Redis.UserDuration)); err != nil {
+		tx.Rollback()
+		return model.User{}, err
+	}
 
 	// commit a transaction
 	tx.Commit()
@@ -95,6 +114,18 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 	// Check Hash Password
 	if ok := new(model.Bcrypt).CheckPasswordHash(Password, *user.Password); !ok {
 		return Response, fmt.Errorf("username or password not found")
+	}
+
+	// generate new jwt token
+	jwt, err := model.JWT.Generate()
+	if err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
+
+	// Store User into redis DB with uuid
+	if err := redis.Database.Set(context.Background(), jwt.AccessUUID, user, time.Duration(conf.GlobalConfigs.Service.Redis.UserDuration)); err != nil {
+		tx.Rollback()
+		return model.User{}, err
 	}
 
 	// commit the transaction
@@ -122,44 +153,64 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 
 	// try to store phone fo 2 min
 	// IF Have Error
-	// TODO Change the way the code is sent. Send by email
 	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSDuration)); err != nil {
 		tx.Rollback()
 		return model.User{}, err
 	}
 
-	// TODO add notification service for send SMS to user for login
-	// send user_id to notif service - in notif service generate code and send notif to client
+	// generate new jwt token
+	jwt, err := model.JWT.Generate()
+	if err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
 
+	// send user_id to notif service - in notif service generate a code and send notif to client
+	err = kafka.Database.Producer(model.Notification{
+		User:    user,
+		Message: "SMS",
+		JWT:     jwt.AccessToken,
+		KEY:     user.Phone,
+	}, conf.GlobalConfigs.Kafka.Topics.Notif)
+	if err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
+
+	// Store User into redis DB with uuid
+	if err := redis.Database.Set(context.Background(), jwt.AccessUUID, user, time.Duration(conf.GlobalConfigs.Service.Redis.UserDuration)); err != nil {
+		tx.Rollback()
+		return model.User{}, err
+	}
 	tx.Commit()
 
 	return user, err
 }
+
+// verify the jwt{UUID} and get user
 func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string, Code string) (Response model.User, err error) {
-	var dst string
+	// var dst string
 
-	// check the token exists in redis or not
-	// example:
-	// {Token == Phone} and Phone exists in Redis then you can check SMS Status
-	if err := redis.Database.Get(context.Background(), Token, &dst); err != nil {
-		return model.User{}, fmt.Errorf("please check your identity")
-	}
+	// // check the token exists in redis or not
+	// // example:
+	// // {Token == Phone} and Phone exists in Redis then you can check SMS Status
+	// if err := redis.Database.Get(context.Background(), Token, &dst); err != nil {
+	// 	return model.User{}, fmt.Errorf("please check your identity")
+	// }
 
-	// check for sended Notification before
-	// if code exists do not send code to notif service
-	if err := redis.Database.Get(context.Background(), Token+"_N", &dst); err == nil && dst == "NOTIFICATION" {
-		return model.User{}, fmt.Errorf("You have tried before, please wait a minute")
-	}
+	// // check for sended Notification before
+	// // if code exists do not send code to notif service
+	// if err := redis.Database.Get(context.Background(), Token+"_N", &dst); err == nil && dst == "NOTIFICATION" {
+	// 	return model.User{}, fmt.Errorf("You have tried before, please wait a minute")
+	// }
 
-	// if code not exists in {redis} then store into redis and send code to notif service
-	// store code in redis for every (10sec) for each requset to notif service
-	if err := redis.Database.Set(context.Background(), Token+"_N", "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSCodeVerification)); err != nil {
-		return model.User{}, err
-	}
+	// // if code not exists in {redis} then store into redis and send code to notif service
+	// // store code in redis for every (10sec) for each requset to notif service
+	// if err := redis.Database.Set(context.Background(), Token+"_N", "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSCodeVerification)); err != nil {
+	// 	return model.User{}, err
+	// }
 
-	// TODO code{Token} to notif service
-	// response for verify user something like [code: "---", status:"VERIFY | BANDED | ..."]
-	// then we can say user is verified or not!
+	// // TODO code{Token} to notif service
+	// // response for verify user something like [code: "---", status:"VERIFY | BANDED | ..."]
+	// // then we can say user is verified or not!
 
 	return Response, err
 }
