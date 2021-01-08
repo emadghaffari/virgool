@@ -6,6 +6,7 @@ require (
 	github.com/emadghaffari/seeder v0.0.0-20210107175858-711e177af488
 	github.com/go-kit/kit v0.10.0
 	github.com/go-playground/validator/v10 v10.4.1
+	github.com/go-redis/redis/v8 v8.4.4
 	github.com/golang/protobuf v1.4.3
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
