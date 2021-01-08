@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/emadghaffari/virgool/auth/database/mysql"
+	"github.com/emadghaffari/virgool/auth/database/redis"
 	"github.com/emadghaffari/virgool/auth/model"
 )
 
@@ -41,6 +43,7 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 	// find the user role
 	role := model.Role{}
 	if err := tx.Table("roles").Where("name = ?", "user").First(&role).Error; err != nil {
+		tx.Rollback()
 		return Response, fmt.Errorf(err.Error())
 	}
 
@@ -57,7 +60,16 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 
 	// try to store user with model
 	if gm := tx.Create(&user); gm.Error != nil {
+		tx.Rollback()
 		return Response, fmt.Errorf(err.Error())
+	}
+
+	// try to store phone fo 2 min
+	// IF Have Error
+	// TODO Change the way the code is sent. Send by email
+	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Minute*2); err != nil {
+		tx.Rollback()
+		return model.User{}, err
 	}
 
 	// TODO add notification service for send SMS to user for register
@@ -91,7 +103,11 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 }
 func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response model.User, err error) {
 
-	// TODO check phone number for sended code before {DB: Redis - Time: 2min}
+	// check phone number for sended code before {DB: Redis - Time: 2min}
+	var dst string
+	if err := redis.Database.Get(context.Background(), Phone, &dst); err == nil && dst == "NOTIFICATION" {
+		return model.User{}, fmt.Errorf("We have sent you an SMS. Please check your number {%s}", Phone)
+	}
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
@@ -101,6 +117,14 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 	if err := tx.Table("users").Where("phone = ?", Phone).First(&user).Error; err != nil {
 		tx.Rollback()
 		return Response, fmt.Errorf(err.Error())
+	}
+
+	// try to store phone fo 2 min
+	// IF Have Error
+	// TODO Change the way the code is sent. Send by email
+	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Minute*2); err != nil {
+		tx.Rollback()
+		return model.User{}, err
 	}
 
 	// TODO add notification service for send SMS to user for login
