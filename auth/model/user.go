@@ -7,12 +7,12 @@ import (
 // User struct
 type User struct {
 	ID        uint64       `json:"id" gorm:"primaryKey"`
-	Username  string       `json:"username,omitempty" gorm:"unique;not null;type:varchar(100);"`
-	Password  *string      `json:"-,omitempty" gorm:"type:varchar(100);"`
-	Name      string       `json:"name,omitempty" gorm:"type:varchar(100);"`
-	LastName  string       `json:"last_name,omitempty" gorm:"type:varchar(100);"`
-	Phone     string       `json:"phone,omitempty" gorm:"unique;not null;type:varchar(30);"`
-	Email     string       `json:"email,omitempty" gorm:"unique;not null;type:varchar(60);"`
+	Username  string       `validate:"required" json:"username,omitempty" gorm:"unique;not null;type:varchar(100);"`
+	Password  *string      `validate:"required,gte=7" json:"-,omitempty" gorm:"type:varchar(100);"`
+	Name      string       `validate:"required" json:"name,omitempty" gorm:"type:varchar(100);"`
+	LastName  string       `validate:"required" json:"last_name,omitempty" gorm:"type:varchar(100);"`
+	Phone     string       `validate:"required" json:"phone,omitempty" gorm:"unique;not null;type:varchar(30);"`
+	Email     string       `validate:"required,email" json:"email,omitempty" gorm:"unique;not null;type:varchar(60);"`
 	Token     string       `json:"token,omitempty"`
 	RoleID    uint64       `json:"-"`
 	Role      Role         `json:"role" gorm:"foreignKey:RoleID;references:ID"`
@@ -42,10 +42,10 @@ type Permission struct {
 // Media struct
 type Media struct {
 	ID          uint64    `json:"-" gorm:"primaryKey"`
-	URL         string    `json:"url"`
-	Type        string    `json:"type"`
-	Title       *string   `json:"title,omitempty"`
-	Description *string   `json:"description,omitempty"`
+	URL         string    `validate:"required" json:"url"`
+	Type        string    `validate:"required" json:"type"`
+	Title       *string   `validate:"required" json:"title,omitempty"`
+	Description *string   `validate:"required" json:"description,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
