@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/emadghaffari/virgool/auth/conf"
+	"github.com/emadghaffari/virgool/auth/database/kafka"
 	"github.com/emadghaffari/virgool/auth/database/mysql"
 	"github.com/emadghaffari/virgool/auth/database/redis"
 	"github.com/emadghaffari/virgool/auth/env"
@@ -69,6 +70,12 @@ func Run() {
 
 	// connect to local initRedis
 	if err := initRedis(); err != nil {
+		logger.Log("exit")
+		return
+	}
+
+	// connect to kafka
+	if err := initKafka(); err != nil {
 		logger.Log("exit")
 		return
 	}
@@ -244,4 +251,8 @@ func initJaeger() (io.Closer, error) {
 
 func initRedis() error {
 	return redis.Database.Connect(&conf.GlobalConfigs)
+}
+
+func initKafka() error {
+	return kafka.Database.Connect(&conf.GlobalConfigs)
 }
