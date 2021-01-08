@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 
 	"github.com/emadghaffari/seeder/seeder"
 	"github.com/emadghaffari/virgool/auth/conf"
@@ -50,14 +50,17 @@ func seed(cmd *cobra.Command, args []string) {
 }
 
 func rolePermission(db *gorm.DB) (ids []uint64) {
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
+		tx := db.Begin()
 		permissions := []*model.Permission{}
 		for i := 0; i < 10; i++ {
-			permissions = append(permissions, &model.Permission{
-				Name:      seeder.Name(),
+			per := &model.Permission{
+				Name:      seeder.Name() + " " + seeder.Name(),
 				UpdatedAt: time.Now(),
 				CreatedAt: time.Now(),
-			})
+			}
+			tx.Create(per)
+			permissions = append(permissions, per)
 		}
 		role := &model.Role{
 			Name:        seeder.Name(),
@@ -65,7 +68,8 @@ func rolePermission(db *gorm.DB) (ids []uint64) {
 			UpdatedAt:   time.Now(),
 			CreatedAt:   time.Now(),
 		}
-		db.Create(role)
+		tx.Create(role)
+		tx.Commit()
 		ids = append(ids, role.ID)
 	}
 	return ids
@@ -73,17 +77,19 @@ func rolePermission(db *gorm.DB) (ids []uint64) {
 
 func users(db *gorm.DB, ids []uint64) {
 	for i := 0; i < 200; i++ {
+		tx := db.Begin()
 		pass := seeder.Password()
-		db.Create(&model.User{
-			Username:  seeder.Username(),
+		tx.Create(&model.User{
+			Username:  seeder.Username() + " " + seeder.Username(),
 			Password:  &pass,
-			Phone:     seeder.Phone(),
+			Phone:     seeder.Phone() + seeder.Phone(),
 			Name:      seeder.Name(),
 			LastName:  seeder.Name(),
-			Email:     seeder.Email(),
+			Email:     seeder.Job() + "_" + seeder.Email(),
 			RoleID:    seeder.RandomArray(ids).(reflect.Value).Uint(),
 			UpdatedAt: time.Now(),
 			CreatedAt: time.Now(),
 		})
+		tx.Commit()
 	}
 }

@@ -1,55 +1,63 @@
 package model
 
 import (
-	"encoding/json"
-	"fmt"
-	"strings"
+	"context"
+	"errors"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
+	"gorm.io/gorm/utils"
 )
 
 // DBLogger struct
 type DBLogger struct {
-	logrus.FieldLogger
+	SlowThreshold         time.Duration
+	SourceField           string
+	SkipErrRecordNotFound bool
 }
 
 // NewDBLogger func
-func NewDBLogger(log logrus.FieldLogger) *DBLogger {
-	return &DBLogger{log}
+func NewDBLogger() *DBLogger {
+	return &DBLogger{
+		SkipErrRecordNotFound: true,
+	}
 }
 
-// Print meth
-func (dbl *DBLogger) Print(params ...interface{}) {
-	if len(params) <= 1 {
+func (l *DBLogger) LogMode(gormlogger.LogLevel) gormlogger.Interface {
+	return l
+}
+
+func (l *DBLogger) Info(ctx context.Context, s string, args ...interface{}) {
+	log.WithContext(ctx).Infof(s, args)
+}
+
+func (l *DBLogger) Warn(ctx context.Context, s string, args ...interface{}) {
+	log.WithContext(ctx).Warnf(s, args)
+}
+
+func (l *DBLogger) Error(ctx context.Context, s string, args ...interface{}) {
+	log.WithContext(ctx).Errorf(s, args)
+}
+
+func (l *DBLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+	elapsed := time.Since(begin)
+	sql, _ := fc()
+	fields := log.Fields{}
+	if l.SourceField != "" {
+		fields[l.SourceField] = utils.FileWithLineNum()
+	}
+	if err != nil && !(errors.Is(err, gorm.ErrRecordNotFound) && l.SkipErrRecordNotFound) {
+		fields[log.ErrorKey] = err
+		log.WithContext(ctx).WithFields(fields).Errorf("%s [%s]", sql, elapsed)
 		return
 	}
 
-	level := params[0]
-	log := dbl.WithField("gorm_level", level).WithField("db_src", params[1])
-
-	if level != "sql" {
-		log.Debug(params[2:]...)
+	if l.SlowThreshold != 0 && elapsed > l.SlowThreshold {
+		log.WithContext(ctx).WithFields(fields).Warnf("%s [%s]", sql, elapsed)
 		return
 	}
 
-	dur := params[2].(time.Duration)
-	sql := params[3].(string)
-	sqlValues := params[4].([]interface{})
-	rows := params[5].(int64)
-
-	values := ""
-	if valuesJSON, err := json.Marshal(sqlValues); err == nil {
-		values = string(valuesJSON)
-	} else {
-		values = fmt.Sprintf("%+v", sqlValues)
-	}
-
-	log.
-		WithField("dur_ns", dur.Nanoseconds()).
-		WithField("dur", dur).
-		WithField("sql", strings.ReplaceAll(sql, `"`, `'`)).
-		WithField("values", strings.ReplaceAll(values, `"`, `'`)).
-		WithField("rows", rows).
-		Debug("sql query")
+	log.WithContext(ctx).WithFields(fields).Debugf("%s [%s]", sql, elapsed)
 }

@@ -2,22 +2,20 @@ package model
 
 import (
 	"time"
-
-	"github.com/emadghaffari/virgool/auth/pkg/grpc/pb"
 )
 
 // User struct
 type User struct {
-	ID        uint64       `json:"id" gorm:"autoIncrementIncrement"`
-	Username  string       `json:"username,omitempty" gorm:"unique;not null"`
-	Password  *string      `json:"-,omitempty"`
-	Name      string       `json:"name,omitempty"`
-	LastName  string       `json:"last_name,omitempty"`
-	Phone     string       `json:"phone,omitempty" gorm:"unique;not null"`
-	Email     string       `json:"email,omitempty" gorm:"unique;not null"`
+	ID        uint64       `json:"id" gorm:"primaryKey"`
+	Username  string       `json:"username,omitempty" gorm:"unique;not null;type:varchar(100);"`
+	Password  *string      `json:"-,omitempty" gorm:"type:varchar(100);"`
+	Name      string       `json:"name,omitempty" gorm:"type:varchar(100);"`
+	LastName  string       `json:"last_name,omitempty" gorm:"type:varchar(100);"`
+	Phone     string       `json:"phone,omitempty" gorm:"unique;not null;type:varchar(30);"`
+	Email     string       `json:"email,omitempty" gorm:"unique;not null;type:varchar(60);"`
 	Token     string       `json:"token,omitempty"`
 	RoleID    uint64       `json:"-"`
-	Role      *pb.Role     `json:"roles,omitempty" gorm:"foreignKey:id;references:RoleID"`
+	Role      Role         `json:"role" gorm:"foreignKey:RoleID;references:ID"`
 	Media     []Mediaables `gorm:"polymorphic:Owner;"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
@@ -25,25 +23,25 @@ type User struct {
 
 // Role struct
 type Role struct {
-	ID          uint64        `json:"-" gorm:"autoIncrementIncrement"`
-	Name        string        `json:"name,omitempty"`
-	Permissions []*Permission `json:"permissions,omitempty" gorm:"many2many:roles_permissions;"`
+	ID          uint64        `json:"-" gorm:"primaryKey"`
+	Name        string        `json:"name,omitempty" gorm:"unique;not null;type:varchar(30);"`
+	Permissions []*Permission `json:"permissions,omitempty" gorm:"many2many:roles_permissions;association_foreignkey:ID;foreignkey:ID"`
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
 // Permission struct
 type Permission struct {
-	ID        uint64    `json:"-" gorm:"autoIncrementIncrement"`
-	Name      string    `json:"name,omitempty"`
-	Role      []*Role   `json:"-" gorm:"many2many:roles_permissions;"`
+	ID        uint64    `json:"-" gorm:"primaryKey"`
+	Name      string    `json:"name,omitempty" gorm:"unique;not null;type:varchar(30);"`
+	Role      []*Role   `json:"-" gorm:"many2many:roles_permissions;association_foreignkey:ID;foreignkey:ID"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // Media struct
 type Media struct {
-	ID          uint64    `json:"-" gorm:"autoIncrementIncrement"`
+	ID          uint64    `json:"-" gorm:"primaryKey"`
 	URL         string    `json:"url"`
 	Type        string    `json:"type"`
 	Title       *string   `json:"title,omitempty"`
@@ -54,8 +52,8 @@ type Media struct {
 
 // Mediaables struct
 type Mediaables struct {
-	ID            uint64 `json:"-" gorm:"autoIncrementIncrement"`
-	MediaID       uint64 `json:"-"`
-	MediaableID   uint64 `json:"-"`
-	MediaableType string `json:"-"`
+	ID        uint64 `json:"-" gorm:"primaryKey"`
+	MediaID   uint64 `json:"-"`
+	OwnerID   uint64 `json:"-"`
+	OwnerType string `json:"-"`
 }
