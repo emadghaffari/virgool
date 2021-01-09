@@ -73,7 +73,7 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 	}
 
 	// generate new jwt token
-	jwt, err := model.JWT.Generate()
+	jwt, err := model.JWT.Generate(context.Background(), user)
 	if err != nil {
 		return Response, fmt.Errorf(err.Error())
 	}
@@ -117,7 +117,7 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 	}
 
 	// generate new jwt token
-	jwt, err := model.JWT.Generate()
+	jwt, err := model.JWT.Generate(context.Background(), user)
 	if err != nil {
 		return Response, fmt.Errorf(err.Error())
 	}
@@ -159,7 +159,7 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 	}
 
 	// generate new jwt token
-	jwt, err := model.JWT.Generate()
+	jwt, err := model.JWT.Generate(context.Background(), user)
 	if err != nil {
 		return Response, fmt.Errorf(err.Error())
 	}
@@ -187,32 +187,19 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 
 // verify the jwt{UUID} and get user
 func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string, Code string) (Response model.User, err error) {
-	// var dst string
 
-	// // check the token exists in redis or not
-	// // example:
-	// // {Token == Phone} and Phone exists in Redis then you can check SMS Status
-	// if err := redis.Database.Get(context.Background(), Token, &dst); err != nil {
-	// 	return model.User{}, fmt.Errorf("please check your identity")
-	// }
+	// generate new jwt token
+	tk, err := model.JWT.Verify(Token)
+	if err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
 
-	// // check for sended Notification before
-	// // if code exists do not send code to notif service
-	// if err := redis.Database.Get(context.Background(), Token+"_N", &dst); err == nil && dst == "NOTIFICATION" {
-	// 	return model.User{}, fmt.Errorf("You have tried before, please wait a minute")
-	// }
+	if err := model.JWT.Get(context.Background(), tk, &Response); err != nil {
+		return Response, fmt.Errorf(err.Error())
+	}
 
-	// // if code not exists in {redis} then store into redis and send code to notif service
-	// // store code in redis for every (10sec) for each requset to notif service
-	// if err := redis.Database.Set(context.Background(), Token+"_N", "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSCodeVerification)); err != nil {
-	// 	return model.User{}, err
-	// }
-
-	// // TODO code{Token} to notif service
-	// // response for verify user something like [code: "---", status:"VERIFY | BANDED | ..."]
-	// // then we can say user is verified or not!
-
-	return Response, err
+	// return item.(model.User), err
+	return Response, nil
 }
 
 // NewBasicAuthService returns a naive, stateless implementation of AuthService.
