@@ -15,6 +15,21 @@ services:
       - 8800:8081
       - 8801:8082
 
+  # notification service
+  notification:
+    build:
+      context: .
+      dockerfile: notification/Dockerfile
+    restart: always
+    volumes:
+      - .:/go/src/github.com/emadghaffari/virgool
+    depends_on:
+      - db
+      - vault
+    ports:
+      - 8850:8081
+      - 8851:8082
+
   # database container
   db:
     image: mysql:5.7

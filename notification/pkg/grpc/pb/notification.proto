@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package pb;
+
+
+
+//The Notification service definition.
+service Notification {
+ rpc SMS    (SMSRequest   ) returns (SMSReply   );
+ rpc Email  (EmailRequest ) returns (EmailReply );
+ rpc Verify (VerifyRequest) returns (VerifyReply);
+}
+
+message SMSRequest {}
+
+message SMSReply {}
+
+message EmailRequest {}
+
+message EmailReply {}
+
+message VerifyRequest {}
+
+message VerifyReply {}
+
