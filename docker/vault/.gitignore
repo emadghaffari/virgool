@@ -5,3 +5,5 @@
 /consul/data/*
 /!consul/data/.gitkeep
 /consul/data/
+/vault-*
+vault-*
