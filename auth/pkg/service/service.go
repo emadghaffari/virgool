@@ -30,6 +30,7 @@ type AuthService interface {
 
 type basicAuthService struct{}
 
+// Register meth
 func (b *basicAuthService) Register(ctx context.Context, Username string, Password string, Name string, LastName string, Phone string, Email string) (Response model.User, err error) {
 
 	// Hash Password
@@ -100,6 +101,8 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 
 	return user, err
 }
+
+// Login with username and password
 func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Password string) (Response model.User, err error) {
 
 	// begins a transaction
@@ -107,9 +110,11 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 
 	// find the user with username or email
 	user := model.User{}
-	if err := tx.Table("users").Where("username = ? OR email = ?", Username, Username).First(&user).Error; err != nil {
+	if err := tx.Table("users").Preload("Role").Preload("Role.Permissions").Where("username = ? OR email = ?", Username, Username).First(&user).Error; err != nil {
 		return Response, fmt.Errorf(err.Error())
 	}
+
+	fmt.Println(user)
 
 	// Check Hash Password
 	if ok := new(model.Bcrypt).CheckPasswordHash(Password, *user.Password); !ok {
@@ -133,6 +138,8 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 
 	return user, err
 }
+
+// login with phone and sms
 func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response model.User, err error) {
 
 	// check phone number for sended code before {DB: Redis - Time: 2min}
@@ -146,7 +153,7 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 
 	// find the user user
 	user := model.User{}
-	if err := tx.Table("users").Where("phone = ?", Phone).First(&user).Error; err != nil {
+	if err := tx.Table("users").Preload("Role").Preload("Role.Permissions").Where("phone = ?", Phone).First(&user).Error; err != nil {
 		tx.Rollback()
 		return Response, fmt.Errorf(err.Error())
 	}
