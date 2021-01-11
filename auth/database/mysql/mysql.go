@@ -51,6 +51,8 @@ func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger)
 			config.MYSQL.Schema,
 		)
 
+		fmt.Println(config)
+
 		m.DB, err = gorm.Open(mysql.Open(datasource), conf)
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "opening database connection"))
