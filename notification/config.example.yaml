@@ -1,0 +1,64 @@
+# environment: "development"
+environment: "production"
+
+service:
+  name: "notification"
+  redis:
+    smsDuration: "5m"
+    smsCodeVerification: "10s"
+    userDuration: "800m"
+
+jaeger:
+  hostPort: "jaeger:6831"
+  logSpans: true
+
+grpc:
+  host: "localhost"
+  port: ":8082"
+  endpoint: ":8083"
+
+http:
+  host: "localhost"
+  port: ":8080"
+  endpoint: ":8081"
+
+debug:
+  host: "localhost"
+  port: ":8084"
+  endpoint: ":8085"
+
+redis:
+  username: ""
+  password: ""
+  db: 0
+  host: "redis:6379"
+  logger: ""
+
+vault:
+  address: "http://vault:8200"
+  token: "" # INSERT TOKEN
+  configuration: "virgool/configuration"
+
+multiInstanceMode: false
+
+log:
+  disableColors: false
+  quoteEmptyFields: false
+
+kafka:
+  consumer: false
+  producer: true
+  brokers:
+    - "kafka1:9092"
+    - "kafka2:9092"
+    - "kafka3:9092"
+  version: "v1"
+  group: ""
+  assignor: "range"
+  oldest: true
+  verbose: false
+  topics:
+    notif: "notifications"
+  username: ""
+  password: ""
+  auth: false
