@@ -81,10 +81,13 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 
 	// send user_id to notif service - in notif service generate a code and send notif to client
 	err = kafka.Database.Producer(model.Notification{
-		Data:    user,
+		Data: model.Data{
+			User:  user,
+			Token: jwt.AccessToken,
+		},
 		Message: "SMS",
-		Token:   jwt.AccessToken,
-		KEY:     user.Phone,
+
+		KEY: user.Phone,
 	}, conf.GlobalConfigs.Kafka.Topics.Notif)
 	if err != nil {
 		return Response, fmt.Errorf(err.Error())
@@ -173,9 +176,11 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 
 	// send user_id to notif service - in notif service generate a code and send notif to client
 	err = kafka.Database.Producer(model.Notification{
-		Data:    user,
+		Data: model.Data{
+			User:  user,
+			Token: jwt.AccessToken,
+		},
 		Message: "SMS",
-		Token:   jwt.AccessToken,
 		KEY:     user.Phone,
 	}, conf.GlobalConfigs.Kafka.Topics.Notif)
 	if err != nil {
