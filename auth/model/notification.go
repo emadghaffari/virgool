@@ -2,8 +2,8 @@ package model
 
 // Notification struct
 type Notification struct {
-	User    User   `json:"user"`
+	Data    User   `json:"data"`
 	Message string `json:"message"`
-	JWT     string `json:"jwt"`
+	Token   string `json:"token"`
 	KEY     string `json:"key"`
 }
