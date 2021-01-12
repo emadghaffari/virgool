@@ -53,9 +53,6 @@ func (k *Client) Connect(conf *conf.GlobalConfiguration) error {
 		// clientID is service name
 		config.ClientID = conf.Service.Name
 
-		// consumer errors
-		config.Consumer.Return.Errors = true
-
 		// config.Net
 		config.Net.MaxOpenRequests = 1
 
