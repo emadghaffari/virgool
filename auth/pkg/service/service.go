@@ -85,9 +85,9 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 			User:  user,
 			Token: jwt.AccessToken,
 		},
-		Message: "SMS",
-
-		KEY: user.Phone,
+		Message: "SEND SMS TO CLIENT",
+		KEY:     user.Phone,
+		Type:    "SMS",
 	}, conf.GlobalConfigs.Kafka.Topics.Notif)
 	if err != nil {
 		return Response, fmt.Errorf(err.Error())
@@ -116,8 +116,6 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 	if err := tx.Table("users").Preload("Role").Preload("Role.Permissions").Where("username = ? OR email = ?", Username, Username).First(&user).Error; err != nil {
 		return Response, fmt.Errorf(err.Error())
 	}
-
-	fmt.Println(user)
 
 	// Check Hash Password
 	if ok := new(model.Bcrypt).CheckPasswordHash(Password, *user.Password); !ok {
@@ -180,8 +178,9 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 			User:  user,
 			Token: jwt.AccessToken,
 		},
-		Message: "SMS",
+		Message: "SEND SMS TO CLIENT",
 		KEY:     user.Phone,
+		Type:    "SMS",
 	}, conf.GlobalConfigs.Kafka.Topics.Notif)
 	if err != nil {
 		return Response, fmt.Errorf(err.Error())

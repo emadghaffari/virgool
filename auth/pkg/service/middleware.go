@@ -53,10 +53,6 @@ func (l loggingMiddleware) LoginUP(ctx context.Context, Username string, Passwor
 	return l.next.LoginUP(ctx, Username, Password)
 }
 func (l loggingMiddleware) LoginP(ctx context.Context, Phone string) (Response model.User, err error) {
-	defer func() {
-		l.logger.Log("method", "LoginP", "Phone", Phone, "Response", Response, "err", err)
-	}()
-
 	if err := model.Validator.Get().Var(Phone, "required"); err != nil {
 		return model.User{}, fmt.Errorf("Error: %s", err.Error())
 	}
