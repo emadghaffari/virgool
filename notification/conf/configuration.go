@@ -54,7 +54,12 @@ type LoggingConfig struct {
 
 // Service details
 type Service struct {
-	Name  string `yaml:"service.name"`
+	Name string `yaml:"service.name"`
+
+	// min code lenght
+	MinCL int `yaml:"service.mincl"`
+	MaxCl int `yaml:"service.maxcl"`
+
 	Redis struct {
 		SMSDuration         time.Duration `yaml:"service.redis.smsDuration"`
 		SMSCodeVerification time.Duration `yaml:"service.redis.smsCodeVerification"`
