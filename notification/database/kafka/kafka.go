@@ -11,33 +11,35 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/emadghaffari/virgool/notification/conf"
+	"github.com/emadghaffari/virgool/notification/model/notif"
+	"github.com/emadghaffari/virgool/notification/pkg/service"
 )
 
 var (
 	// Database var
-	Database Kafka = &kf{}
+	Database kf = &Client{}
 	once     sync.Once
 	err      error
 )
 
-// Kafka interface
-type Kafka interface {
+// kf interface
+type kf interface {
 	Connect(conf *conf.GlobalConfiguration) error
-	syncProducer() (sarama.SyncProducer, error)
-	Producer(item interface{}, topic string) error
-	newConsumer() (sarama.ConsumerGroup, error)
-	Consumer(ctx context.Context, topics []string)
-	Setup(_ sarama.ConsumerGroupSession) error
-	Cleanup(_ sarama.ConsumerGroupSession) error
-	ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error
+	Consumer(ctx context.Context, brokers []string, topic string) (sarama.Consumer, error)
 }
 
-type kf struct {
-	Config *sarama.Config
+// Client struct
+type Client struct {
+	Config   *sarama.Config
+	Messages chan *sarama.ConsumerMessage
+	Errors   chan *sarama.ConsumerError
+	ready    chan bool
+	Count    int
 }
 
-func (k *kf) Connect(conf *conf.GlobalConfiguration) error {
-	if err := k.Validate(conf); err != nil {
+// Connect to kafka
+func (k *Client) Connect(conf *conf.GlobalConfiguration) error {
+	if err := k.validate(conf); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("Error in GlobalConfig: %s", err),
 		}).Fatal(fmt.Sprintf("Error in GlobalConfig: %s", err))
@@ -50,6 +52,9 @@ func (k *kf) Connect(conf *conf.GlobalConfiguration) error {
 
 		// clientID is service name
 		config.ClientID = conf.Service.Name
+
+		// consumer errors
+		config.Consumer.Return.Errors = true
 
 		// config.Net
 		config.Net.MaxOpenRequests = 1
@@ -78,145 +83,75 @@ func (k *kf) Connect(conf *conf.GlobalConfiguration) error {
 
 		}
 
-		// if kafka has SASL auth
-		if conf.Kafka.Auth {
-			// Auth
-			config.Net.SASL.Enable = true
-			config.Net.SASL.Handshake = true
-			config.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA512
-			config.Net.SASL.User = conf.Kafka.Username
-			config.Net.SASL.Password = conf.Kafka.Password
-			config.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient { return &XDGSCRAMClient{HashGeneratorFcn: SHA512} }
-
-		}
-
-		if conf.Kafka.Producer {
-			// config.Producer
-			config.Producer.Idempotent = true
-			config.Producer.Return.Errors = true
-			config.Producer.RequiredAcks = sarama.WaitForAll
-			config.Producer.Return.Successes = true
-			config.Producer.Retry.Backoff = time.Duration(time.Second * 5)
-			config.Producer.Retry.Max = 5
-			config.Producer.Compression = sarama.CompressionLZ4
-			config.Producer.Timeout = time.Duration(time.Second * 50)
-		}
-
 		k.Config = config
+		k.Count = conf.Service.MinCL
 	})
 
 	return err
 }
 
-// SyncProducer func
-func (k *kf) syncProducer() (sarama.SyncProducer, error) {
-	syncProducer, err := sarama.NewSyncProducer(conf.GlobalConfigs.Kafka.Brokers, k.Config)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"message": fmt.Sprintf("can not syncProducer kafka brokers: %s", conf.GlobalConfigs.Kafka.Brokers),
-			"error":   fmt.Sprintf("Error: %s", err),
-		}).Fatal(fmt.Sprintf("can not syncProducer kafka brokers: %s Error: %s", conf.GlobalConfigs.Kafka.Brokers, err))
-		return nil, err
-	}
-	return syncProducer, nil
-}
-
-// Producer func
-func (k *kf) Producer(item interface{}, topic string) error {
-	bt, err := json.Marshal(item)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"message": fmt.Sprintf("can not marshal data: %s", item),
-			"error":   fmt.Sprintf("Error: %s", err),
-		}).Fatal(fmt.Sprintf("can not marshal data: %s", item))
-		return fmt.Errorf("can not marshal data: %s", item)
-	}
-
-	syncProducer, err := k.syncProducer()
-	if err != nil {
-		return err
-	}
-
-	_, _, err = syncProducer.SendMessage(&sarama.ProducerMessage{
-		Topic: topic,
-		Value: sarama.StringEncoder(string(bt)),
-	})
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"message": fmt.Sprintf("failed to send message to: %s || Topics:%s", topic, conf.GlobalConfigs.Kafka.Topics),
-			"error":   fmt.Sprintf("Error: %s", err),
-		}).Fatal(fmt.Sprintf("Error: %s", err))
-		return fmt.Errorf("failed to send message to: %s Error:%s", topic, err)
-	}
-
-	return syncProducer.Close()
-}
-
-// NewConsumer func
-func (k *kf) newConsumer() (sarama.ConsumerGroup, error) {
-	group, err := sarama.NewConsumerGroup(conf.GlobalConfigs.Kafka.Brokers, conf.GlobalConfigs.Kafka.Group, k.Config)
+// Consumer meth
+func (k *Client) Consumer(ctx context.Context, brokers []string, topic string) (sarama.Consumer, error) {
+	client, err := sarama.NewConsumer(brokers, k.Config)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("Error in newConsumer: %s", err),
 		}).Fatal(fmt.Sprintf("Error in newConsumer: %s", err))
 		return nil, err
 	}
-	go func() {
-		for err := range group.Errors() {
-			logrus.WithFields(logrus.Fields{
-				"error": fmt.Sprintf("Error in newConsumer: %s", err),
-			}).Fatal(fmt.Sprintf("Error in newConsumer: %s", err))
-		}
-	}()
 
-	return group, nil
-}
+	consumers := make(chan *sarama.ConsumerMessage)
+	errors := make(chan *sarama.ConsumerError)
 
-// Consumer func
-func (k *kf) Consumer(ctx context.Context, topics []string) {
-	group, _ := k.newConsumer()
-	defer func() {
-		if err := group.Close(); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": fmt.Sprintf("Error in Consumer: %s", err),
-			}).Fatal(fmt.Sprintf("Error in Consumer: %s", err))
-		}
-	}()
-	func() {
+	partitions, err := client.Partitions(topic)
+	if err != nil {
+		logrus.Warn(err)
+		return nil, err
+	}
+
+	consumer, err := client.ConsumePartition(topic, partitions[0], sarama.OffsetNewest)
+	if err != nil {
+		logrus.Warn(err)
+		return nil, err
+	}
+
+	go func(topic string, consumer sarama.PartitionConsumer) {
 		for {
-			err := group.Consume(ctx, topics, k)
-			if err != nil {
-				fmt.Printf("kafka consume failed: %v, sleeping and retry in a moment\n", err)
-				time.Sleep(time.Millisecond * 100)
+			select {
+			case consumerError := <-consumer.Errors():
+				errors <- consumerError
+
+			case msg := <-consumer.Messages():
+				consumers <- msg
+			}
+		}
+	}(topic, consumer)
+
+	go func() {
+		for {
+			time.Sleep(time.Second)
+			select {
+			case msg := <-consumers:
+				id := fmt.Sprintf("%v-%d-%d", msg.Topic, msg.Partition, msg.Offset)
+
+				var item notif.Notification
+				if err := json.Unmarshal(msg.Value, &item); err != nil {
+					logrus.WithFields(logrus.Fields{
+						"error": fmt.Sprintf("cannot unmarshal data from kafka Error: %s - id: %s", err, id),
+					}).Fatal(fmt.Sprintf("cannot unmarshal data from kafka Error: %s - id: %s", err, id))
+				}
+
+				service.Streamer.Store(context.Background(), k.Count, item)
+				k.Count++
+
+				if k.Count == conf.GlobalConfigs.Service.MaxCl {
+					k.Count = conf.GlobalConfigs.Service.MinCL
+				}
+			case consumerError := <-errors:
+				logrus.Warn(string(consumerError.Topic), string(consumerError.Partition), consumerError.Err)
 			}
 		}
 	}()
-}
 
-// Setup meth
-func (k *kf) Setup(_ sarama.ConsumerGroupSession) error {
-	fmt.Println("*********************Setup*******************")
-	return nil
-}
-
-// Cleanup meth
-func (k *kf) Cleanup(_ sarama.ConsumerGroupSession) error {
-	fmt.Println("*********************Cleanup*******************")
-	return nil
-}
-
-// ConsumeClaim meth
-func (k *kf) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-	fmt.Println("*********************ConsumeClaim*******************")
-
-	for msg := range claim.Messages() {
-		id := fmt.Sprintf("%v-%d-%d", msg.Topic, msg.Partition, msg.Offset)
-		// go elasticsearch.Save(id, string(msg.Value))
-		fmt.Println("*******************")
-		fmt.Println("*******************")
-		fmt.Println(id)
-		fmt.Println("*******************")
-		fmt.Println("*******************")
-	}
-	return nil
+	return client, nil
 }

@@ -6,7 +6,8 @@ import (
 	"github.com/emadghaffari/virgool/notification/conf"
 )
 
-func (k *kf) Validate(config *conf.GlobalConfiguration) error {
+// Validate meth
+func (k *Client) validate(config *conf.GlobalConfiguration) error {
 	if len(config.Kafka.Brokers) == 0 {
 		return fmt.Errorf("kafka need Brokers, please set the Brokers")
 	}
