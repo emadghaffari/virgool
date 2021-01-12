@@ -7,7 +7,8 @@ var GlobalConfigs GlobalConfiguration
 
 // GlobalConfiguration holds all the global configuration for gocommerce
 type GlobalConfiguration struct {
-	GRPC struct {
+	Environment string `yaml:"environment"`
+	GRPC        struct {
 		Host     string `yaml:"grpc.host"`
 		Port     string `yaml:"grpc.port"`
 		Endpoint string `yaml:"grpc.endpoint"`
@@ -29,6 +30,7 @@ type GlobalConfiguration struct {
 	Service           Service
 	Jaeger            Jaeger
 	Kafka             Kafka
+	Notif             Notif
 }
 
 // RedisConfiguration struct
@@ -92,4 +94,26 @@ type Kafka struct {
 // Topic struct
 type Topic struct {
 	Notif string `yaml:"kafka.topics.notif"`
+}
+
+// Notif struct
+type Notif struct {
+	SMS sms
+}
+
+type sms struct {
+	UserAPIKey string `yaml:"notif.sms.userApiKey"`
+	SecretKey  string `yaml:"notif.sms.secretKey"`
+	Token      struct {
+		URL         string `yaml:"notif.sms.token.url"`
+		ContentType string `yaml:"notif.sms.token.contentType"`
+	}
+
+	Send struct {
+		TemplateURL string `yaml:"notif.sms.send.templateURL"`
+		Verify      struct {
+			TemplateID  string `yaml:"notif.sms.send.verify.templateId"`
+			ContentType string `yaml:"notif.sms.send.verify.contentType"`
+		}
+	}
 }
