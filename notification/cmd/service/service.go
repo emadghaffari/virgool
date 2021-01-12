@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Shopify/sarama"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -98,6 +100,23 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
+
+	// initStream to kafka
+	client, err := initStream()
+	if err != nil {
+		logger.Log("exit")
+		return
+	}
+
+	defer func() {
+		if err := client.Close(); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": fmt.Sprintf("Error in Consumer: %s", err),
+			}).Fatal(fmt.Sprintf("Error in Consumer: %s", err))
+			return
+		}
+	}()
+
 	logger.Log("exit", g.Run())
 
 }
@@ -186,7 +205,7 @@ func initConfigs() error {
 		logrus.Warn(err.Error())
 	}
 	// read from file
-	return env.LoadGlobalConfiguration(dir + "/auth/config.yaml")
+	return env.LoadGlobalConfiguration(dir + "/notification/config.yaml")
 }
 
 func initJaeger() (io.Closer, error) {
@@ -229,4 +248,13 @@ func initRedis() error {
 }
 func initKafka() error {
 	return kafka.Database.Connect(&conf.GlobalConfigs)
+}
+
+func initStream() (sarama.Consumer, error) {
+	client, err := kafka.Database.Consumer(context.Background(), conf.GlobalConfigs.Kafka.Brokers, conf.GlobalConfigs.Kafka.Topics.Notif)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
