@@ -7,7 +7,7 @@ import (
 
 // Notifier interface
 type Notifier interface {
-	Send(ctx context.Context, notif Notification, code int) error
+	Send(ctx context.Context, notif Notification, param []SMSParams, to, template string) error
 }
 
 // Notification struct

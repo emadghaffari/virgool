@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"github.com/emadghaffari/virgool/notification/conf"
 )
 
 // SMS struct
@@ -17,13 +20,16 @@ type SMS struct {
 	IsSuccessful bool
 }
 
-type params struct {
+// SMSParams struct
+type SMSParams struct {
 	Parameter      string
 	ParameterValue interface{}
 }
 
 // Send meth
-func (s *SMS) Send(ctx context.Context, notif Notification, code int) error {
+func (s *SMS) Send(ctx context.Context, notif Notification, params []SMSParams, to, template string) error {
+	fmt.Println(to)
+	fmt.Println(template)
 	t, err := s.token()
 	if err != nil {
 		return err
@@ -34,30 +40,51 @@ func (s *SMS) Send(ctx context.Context, notif Notification, code int) error {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"ParameterArray": []params{
-			{Parameter: "Code", ParameterValue: code},
-		},
-		"Mobile":     "09355960597",
-		"TemplateId": "22108",
+		"ParameterArray": params,
+		"Mobile":         to,
+		"TemplateId":     template,
 	})
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Marshal Send SMS Data: %s", err),
+		}).Warn(fmt.Sprintf("Error in Marshal Send SMS Data: %s", err))
 		return err
 	}
 
-	request, err := http.NewRequest("POST", "https://RestfulSms.com/api/UltraFastSend", bytes.NewBuffer(body))
+	request, err := http.NewRequest("POST", conf.GlobalConfigs.Notif.SMS.Send.TemplateURL, bytes.NewBuffer(body))
 	request.Header.Set("x-sms-ir-secure-token", t)
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Type", conf.GlobalConfigs.Notif.SMS.Send.Verify.ContentType)
 
 	resp, err := client.Do(request)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Send SMS: %s", err),
+		}).Warn(fmt.Sprintf("Error in Send SMS: %s", err))
 		return err
 	}
 	defer resp.Body.Close()
 
-	if _, err := ioutil.ReadAll(resp.Body); err != nil {
-		logrus.Warn(err)
+	bt, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Read Response Body After Send SMS: %s", err),
+			"msg":   string(bt),
+		}).Warn(fmt.Sprintf("Error in Read Response Body After Send SMS: %s", err))
+		return err
+	}
+
+	if err := json.Unmarshal(bt, &s); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Unmarshal Response Data For Sended SMS: %s", err),
+		}).Warn(fmt.Sprintf("Error in Unmarshal Response Data For Sended SMS: %s", err))
+		return err
+	}
+
+	if s.IsSuccessful == false {
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Send SMS: %s", err),
+			"body":  string(bt),
+		}).Warn(fmt.Sprintf("Error in Send SMS: %s", err))
 		return err
 	}
 
@@ -66,17 +93,21 @@ func (s *SMS) Send(ctx context.Context, notif Notification, code int) error {
 
 func (s *SMS) token() (string, error) {
 	req, err := json.Marshal(map[string]string{
-		"UserApiKey": "dd198b76e5ea1d1ef31f8b76",
-		"SecretKey":  "cp6teBC!@FeBC!YFuBC",
+		"UserApiKey": conf.GlobalConfigs.Notif.SMS.UserAPIKey,
+		"SecretKey":  conf.GlobalConfigs.Notif.SMS.SecretKey,
 	})
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Marshal Data sms.go: %s", err),
+		}).Warn(fmt.Sprintf("Error in Marshal Data sms.go: %s", err))
 		return "", err
 	}
 
-	resp, err := http.Post("https://RestfulSms.com/api/Token", "application/json", bytes.NewBuffer(req))
+	resp, err := http.Post(conf.GlobalConfigs.Notif.SMS.Token.URL, conf.GlobalConfigs.Notif.SMS.Token.ContentType, bytes.NewBuffer(req))
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Post Data For Get SMS Token: %s", err),
+		}).Warn(fmt.Sprintf("Error in Post Data For Get SMS Token: %s", err))
 		return "", err
 	}
 
@@ -84,12 +115,24 @@ func (s *SMS) token() (string, error) {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error ioutil Read Data: %s", err),
+		}).Warn(fmt.Sprintf("Error ioutil Read Data: %s", err))
 		return "", err
 	}
 
 	if err := json.Unmarshal(body, &s); err != nil {
-		logrus.Warn(err)
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Unmarshal Response Post Token SMS: %s", err),
+		}).Warn(fmt.Sprintf("Error in Unmarshal Response Post Token SMS: %s", err))
+		return "", err
+	}
+
+	if s.IsSuccessful == false {
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Error in Get Send SMS Token: %s", err),
+			"body":  string(body),
+		}).Warn(fmt.Sprintf("Error in Get Send SMS Token: %s", err))
 		return "", err
 	}
 
