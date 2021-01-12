@@ -7,7 +7,8 @@ var GlobalConfigs GlobalConfiguration
 
 // GlobalConfiguration holds all the global configuration for gocommerce
 type GlobalConfiguration struct {
-	GRPC struct {
+	Environment string `yaml:"environment"`
+	GRPC        struct {
 		Host     string `yaml:"grpc.host"`
 		Port     string `yaml:"grpc.port"`
 		Endpoint string `yaml:"grpc.endpoint"`

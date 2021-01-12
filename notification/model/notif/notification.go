@@ -7,7 +7,7 @@ import (
 
 // Notifier interface
 type Notifier interface {
-	Send(ctx context.Context, notif Notification) error
+	Send(ctx context.Context, notif Notification, code int) error
 }
 
 // Notification struct
