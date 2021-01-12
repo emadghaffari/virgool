@@ -3,7 +3,6 @@ syntax = "proto3";
 package pb;
 
 
-
 //The Notification service definition.
 service Notification {
  rpc SMS    (SMSRequest   ) returns (SMSReply   );
@@ -19,7 +18,18 @@ message EmailRequest {}
 
 message EmailReply {}
 
-message VerifyRequest {}
+message VerifyRequest {
+    string phone = 1;
+    string code = 2;
+}
 
-message VerifyReply {}
+message VerifyReply {
+    string message = 1;
+    string status = 2;
+    repeated Any data = 3;
+}
 
+message Any {
+  string key = 1;
+  string value = 2;
+}
