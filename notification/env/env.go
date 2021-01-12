@@ -15,8 +15,10 @@ import (
 // LoadGlobalConfiguration returns configs
 func LoadGlobalConfiguration(filename string) error {
 
-	if err := localEnvironment(filename); err != nil {
-		return err
+	if _, err := os.Stat(filename); !os.IsNotExist(err) {
+		if err := localEnvironment(filename); err != nil {
+			return err
+		}
 	}
 
 	if viper.GetString("environment") == "production" {
