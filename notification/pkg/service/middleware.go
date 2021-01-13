@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	log "github.com/go-kit/kit/log"
+
+	"github.com/emadghaffari/virgool/notification/model"
 )
 
 // Middleware describes a service middleware.
@@ -39,5 +42,14 @@ func (l loggingMiddleware) Verify(ctx context.Context, phone string, code string
 	defer func() {
 		l.logger.Log("method", "Verify", "phone", phone, "code", code, "message", message, "status", status, "data", data, "err", err)
 	}()
+
+	if err := model.Validator.Get().Var(phone, "required"); err != nil {
+		return fmt.Sprintf("Error: %s", err.Error()), "Error", "", fmt.Errorf("Error: %s", err.Error())
+	}
+
+	if err := model.Validator.Get().Var(code, "required"); err != nil {
+		return fmt.Sprintf("Error: %s", err.Error()), "Error", "", fmt.Errorf("Error: %s", err.Error())
+	}
+
 	return l.next.Verify(ctx, phone, code)
 }
