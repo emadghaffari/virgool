@@ -39,7 +39,7 @@ func seed(cmd *cobra.Command, args []string) {
 	conf.GlobalConfigs.MYSQL.Automigrate = false
 	conf.GlobalConfigs.MYSQL.Logger = false
 
-	if err := mysql.Database.Connect(&conf.GlobalConfigs, conf.Logger); err != nil {
+	if err := mysql.Database.Connect(&conf.GlobalConfigs, logrus.New()); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(2)
 	}
