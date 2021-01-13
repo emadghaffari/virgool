@@ -201,7 +201,7 @@ func initCancelInterrupt(g *group.Group) {
 }
 
 func initDatabase() error {
-	return mysql.Database.Connect(&conf.GlobalConfigs, conf.Logger)
+	return mysql.Database.Connect(&conf.GlobalConfigs, logrus.New())
 }
 
 func initConfigs() error {
