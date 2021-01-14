@@ -15,7 +15,7 @@ import (
 	http1 "github.com/go-kit/kit/transport/http"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	group "github.com/oklog/oklog/pkg/group"
-	opentracinggo "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
@@ -38,7 +38,7 @@ import (
 	service "github.com/emadghaffari/virgool/auth/pkg/service"
 )
 
-var tracer opentracinggo.Tracer
+var tracer opentracing.Tracer
 var logger log.Logger
 
 // Define our flags. Your service probably won't need to bind listeners for
@@ -61,6 +61,15 @@ func Run() {
 
 	// conf logger
 	conf.ConfigureLogging(&conf.GlobalConfigs.Log)
+
+	//  Determine which tracer to use. We'll pass the tracer to all the
+	// components that use it, as a dependency
+	closer, err := initJaeger()
+	if err != nil {
+		logger.Log("exit")
+		return
+	}
+	defer closer.Close()
 
 	// connect to local database
 	if err := initDatabase(); err != nil {
@@ -89,15 +98,6 @@ func Run() {
 	logger = log.NewLogfmtLogger(os.Stderr)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
-
-	//  Determine which tracer to use. We'll pass the tracer to all the
-	// components that use it, as a dependency
-	closer, err := initJaeger()
-	if err != nil {
-		logger.Log("exit")
-		return
-	}
-	defer closer.Close()
 
 	svc := service.New(getServiceMiddleware(logger))
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
@@ -245,7 +245,8 @@ func initJaeger() (io.Closer, error) {
 		return nil, err
 	}
 
-	opentracinggo.SetGlobalTracer(tracer)
+	opentracing.SetGlobalTracer(tracer)
+
 	return closer, nil
 }
 

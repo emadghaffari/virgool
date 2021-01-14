@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/emadghaffari/virgool/auth/conf"
 	"github.com/emadghaffari/virgool/auth/database/kafka"
 	"github.com/emadghaffari/virgool/auth/database/mysql"
@@ -32,6 +34,9 @@ type basicAuthService struct{}
 
 // Register meth
 func (b *basicAuthService) Register(ctx context.Context, Username string, Password string, Name string, LastName string, Phone string, Email string) (Response model.User, err error) {
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("register")
+	defer span.Finish()
 
 	// Hash Password
 	password, err := new(model.Bcrypt).HashPassword(Password)
@@ -107,6 +112,9 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 
 // Login with username and password
 func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Password string) (Response model.User, err error) {
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("loginUP")
+	defer span.Finish()
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
@@ -114,23 +122,28 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 	// find the user with username or email
 	user := model.User{}
 	if err := tx.Table("users").Preload("Role").Preload("Role.Permissions").Where("username = ? OR email = ?", Username, Username).First(&user).Error; err != nil {
+		span.SetTag("Error", err.Error())
 		return Response, fmt.Errorf(err.Error())
 	}
 
 	// Check Hash Password
 	if ok := new(model.Bcrypt).CheckPasswordHash(Password, *user.Password); !ok {
+		span.SetTag("Error", err.Error())
 		return Response, fmt.Errorf("username or password not found")
 	}
 
 	// generate new jwt token
 	jwt, err := model.JWT.Generate(context.Background(), user)
 	if err != nil {
+		span.SetTag("Error", err.Error())
 		return Response, fmt.Errorf(err.Error())
 	}
 
 	// Store User into redis DB with uuid
 	if err := redis.Database.Set(context.Background(), jwt.AccessUUID, user, time.Duration(conf.GlobalConfigs.Service.Redis.UserDuration)); err != nil {
 		tx.Rollback()
+
+		span.SetTag("Error", err.Error())
 		return model.User{}, err
 	}
 
@@ -142,10 +155,14 @@ func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Passwor
 
 // login with phone and sms
 func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response model.User, err error) {
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("loginP")
+	defer span.Finish()
 
 	// check phone number for sended code before {DB: Redis - Time: 2min}
 	var dst string
 	if err := redis.Database.Get(context.Background(), Phone, &dst); err == nil && dst == "NOTIFICATION" {
+		span.SetTag("Error", err.Error())
 		return model.User{}, fmt.Errorf("We have sent you an SMS. Please check your number {%s}", Phone)
 	}
 
@@ -156,6 +173,7 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 	user := model.User{}
 	if err := tx.Table("users").Preload("Role").Preload("Role.Permissions").Where("phone = ?", Phone).First(&user).Error; err != nil {
 		tx.Rollback()
+		span.SetTag("Error", err.Error())
 		return Response, fmt.Errorf(err.Error())
 	}
 
@@ -163,12 +181,14 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 	// IF Have Error
 	if err := redis.Database.Set(context.Background(), user.Phone, "NOTIFICATION", time.Duration(conf.GlobalConfigs.Service.Redis.SMSDuration)); err != nil {
 		tx.Rollback()
+		span.SetTag("Error", err.Error())
 		return model.User{}, err
 	}
 
 	// generate new jwt token
 	jwt, err := model.JWT.Generate(context.Background(), user)
 	if err != nil {
+		span.SetTag("Error", err.Error())
 		return Response, fmt.Errorf(err.Error())
 	}
 
@@ -183,12 +203,14 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 		Type:    "SMS",
 	}, conf.GlobalConfigs.Kafka.Topics.Notif)
 	if err != nil {
+		span.SetTag("Error", err.Error())
 		return Response, fmt.Errorf(err.Error())
 	}
 
 	// Store User into redis DB with uuid
 	if err := redis.Database.Set(context.Background(), jwt.AccessUUID, user, time.Duration(conf.GlobalConfigs.Service.Redis.UserDuration)); err != nil {
 		tx.Rollback()
+		span.SetTag("Error", err.Error())
 		return model.User{}, err
 	}
 	tx.Commit()
@@ -198,14 +220,32 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 
 // verify the jwt{UUID} and get user
 func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string, Code string) (Response model.User, err error) {
+	var tracer opentracing.Tracer
+	var span opentracing.Span
+
+	if parent := opentracing.SpanFromContext(ctx); parent != nil {
+		pctx := parent.Context()
+		if tracer = opentracing.GlobalTracer(); tracer != nil {
+			span = tracer.StartSpan("verify", opentracing.ChildOf(pctx))
+			defer span.Finish()
+		}
+	}
+
+	if parent := opentracing.SpanFromContext(ctx); parent == nil {
+		tracer := opentracing.GlobalTracer()
+		span := tracer.StartSpan("verify")
+		defer span.Finish()
+	}
 
 	// generate new jwt token
 	tk, err := model.JWT.Verify(Token)
 	if err != nil {
+		span.SetTag("Error", err.Error())
 		return Response, fmt.Errorf(err.Error())
 	}
 
 	if err := model.JWT.Get(context.Background(), tk, &Response); err != nil {
+		span.SetTag("Error", err.Error())
 		return Response, fmt.Errorf(err.Error())
 	}
 
