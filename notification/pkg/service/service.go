@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/emadghaffari/virgool/notification/database/redis"
 )
 
@@ -28,6 +30,16 @@ func (b *basicNotificationService) Email(ctx context.Context, to string, body st
 	return message, status, err
 }
 func (b *basicNotificationService) Verify(ctx context.Context, phone string, code string) (message string, status string, data interface{}, err error) {
+	var tracer opentracing.Tracer
+	var span opentracing.Span
+
+	if parent := opentracing.SpanFromContext(ctx); parent != nil {
+		pctx := parent.Context()
+		if tracer = opentracing.GlobalTracer(); tracer != nil {
+			span = tracer.StartSpan("verify", opentracing.ChildOf(pctx))
+			defer span.Finish()
+		}
+	}
 
 	if err := redis.Database.Get(context.Background(), phone+"_"+code, &data); err != nil {
 		return "FAILD", "ERROR", data, err

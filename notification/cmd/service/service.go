@@ -17,7 +17,7 @@ import (
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	group "github.com/oklog/oklog/pkg/group"
-	opentracinggo "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -39,7 +39,7 @@ import (
 	service "github.com/emadghaffari/virgool/notification/pkg/service"
 )
 
-var tracer opentracinggo.Tracer
+var tracer opentracing.Tracer
 var logger log.Logger
 
 // Define our flags. Your service probably won't need to bind listeners for
@@ -239,7 +239,7 @@ func initJaeger() (io.Closer, error) {
 		return nil, err
 	}
 
-	opentracinggo.SetGlobalTracer(tracer)
+	opentracing.SetGlobalTracer(tracer)
 	return closer, nil
 }
 

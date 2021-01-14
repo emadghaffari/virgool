@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/opentracing/opentracing-go"
+
 	"github.com/emadghaffari/virgool/notification/conf"
 	"github.com/emadghaffari/virgool/notification/database/redis"
 	"github.com/emadghaffari/virgool/notification/model/notif"
@@ -24,6 +26,11 @@ type streamNotificationService struct{}
 
 // func (s *streamNotificationService) Store(ctx context.Context, code int, item map[string]interface{}) (err error) {
 func (s *streamNotificationService) Store(ctx context.Context, code int, item notif.Notification) (err error) {
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("notification")
+	span.SetTag("type", item.Type)
+	defer span.Finish()
+
 	data := item.Data.(map[string]interface{})
 
 	if notifire, err := notif.GetNotifier(item.Type); err == nil {
