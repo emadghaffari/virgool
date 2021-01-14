@@ -59,6 +59,10 @@ func localEnvironment(filename string) error {
 		return err
 	}
 
+	// FIXME DELETE the comments
+	// b, _ := json.Marshal(conf.GlobalConfigs)
+	// fmt.Println(string(b))
+
 	return nil
 }
 
