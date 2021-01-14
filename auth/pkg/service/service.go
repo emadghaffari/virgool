@@ -112,9 +112,16 @@ func (b *basicAuthService) Register(ctx context.Context, Username string, Passwo
 
 // Login with username and password
 func (b *basicAuthService) LoginUP(ctx context.Context, Username string, Password string) (Response model.User, err error) {
-	tracer := opentracing.GlobalTracer()
-	span := tracer.StartSpan("loginUP")
-	defer span.Finish()
+	var tracer opentracing.Tracer
+	var span opentracing.Span
+
+	if parent := opentracing.SpanFromContext(ctx); parent != nil {
+		pctx := parent.Context()
+		if tracer = opentracing.GlobalTracer(); tracer != nil {
+			span = tracer.StartSpan("loginUP", opentracing.ChildOf(pctx))
+			defer span.Finish()
+		}
+	}
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
@@ -229,12 +236,6 @@ func (b *basicAuthService) Verify(ctx context.Context, Token string, Type string
 			span = tracer.StartSpan("verify", opentracing.ChildOf(pctx))
 			defer span.Finish()
 		}
-	}
-
-	if parent := opentracing.SpanFromContext(ctx); parent == nil {
-		tracer := opentracing.GlobalTracer()
-		span := tracer.StartSpan("verify")
-		defer span.Finish()
 	}
 
 	// generate new jwt token
