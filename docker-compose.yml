@@ -218,7 +218,7 @@ services:
       - ./docker/kafka/broker1/logs:/logs
       - ./docker/kafka/broker1/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+      # - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
   
   kafka2:
     image: wurstmeister/kafka
@@ -249,7 +249,7 @@ services:
       - ./docker/kafka/broker2/logs:/logs
       - ./docker/kafka/broker2/data:/data  
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+      # - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
   kafka3:
     image: wurstmeister/kafka
     restart: always
@@ -279,7 +279,7 @@ services:
       - ./docker/kafka/broker3/logs:/logs
       - ./docker/kafka/broker3/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+      # - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
 
 # secrets files
 secrets:
