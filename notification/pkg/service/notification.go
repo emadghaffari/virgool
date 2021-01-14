@@ -27,9 +27,12 @@ func (s *streamNotificationService) Store(ctx context.Context, code int, item no
 	data := item.Data.(map[string]interface{})
 
 	if notifire, err := notif.GetNotifier(item.Type); err == nil {
-		notifire.Send(ctx, item, []notif.SMSParams{
+		err := notifire.SendWithTemplate(ctx, item, []notif.SMSParams{
 			{Parameter: "Code", ParameterValue: code},
-		}, data["phone"].(string), conf.GlobalConfigs.Notif.SMS.Send.Verify.TemplateID)
+		}, conf.GlobalConfigs.Notif.SMS.Send.Verify.TemplateID)
+		if err != nil {
+			return err
+		}
 	}
 
 	// count is code we sms to clients
