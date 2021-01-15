@@ -53,6 +53,41 @@ func (b *basicNotificationService) SMS(ctx context.Context, to string, body stri
 	return "SUCCESS", "OK", err
 }
 
+func (b *basicNotificationService) SMST(ctx context.Context, to string, params map[string]string, template string) (message string, status string, err error) {
+	var tracer opentracing.Tracer
+	var span opentracing.Span
+
+	if parent := opentracing.SpanFromContext(ctx); parent != nil {
+		pctx := parent.Context()
+		if tracer = opentracing.GlobalTracer(); tracer != nil {
+			span = tracer.StartSpan("SendWithTemplate", opentracing.ChildOf(pctx))
+			defer span.Finish()
+		}
+	}
+
+	dt := make(map[string]interface{}, 1)
+	dt["phone"] = to
+
+	ntf := notif.Notification{
+		Data: dt,
+		Type: "SMS",
+	}
+	ps := make([]notif.Params, len(params))
+	cc := 0
+	for k, v := range params {
+		ps[cc] = notif.Params{Parameter: k, ParameterValue: v}
+		cc++
+	}
+
+	if notifire, err := notif.GetNotifier("SMS"); err == nil {
+		err := notifire.SendWithTemplate(ctx, ntf, ps, template)
+		if err != nil {
+			return "ERROR IN SEND SMS", "FAILED", err
+		}
+	}
+	return message, status, err
+}
+
 // FIXME fix Email
 func (b *basicNotificationService) Email(ctx context.Context, to string, body string, data interface{}) (message string, status string, err error) {
 	// TODO implement the business logic of Email
@@ -94,39 +129,4 @@ func New(middleware []Middleware) NotificationService {
 		svc = m(svc)
 	}
 	return svc
-}
-
-func (b *basicNotificationService) SMST(ctx context.Context, to string, params map[string]string, template string) (message string, status string, err error) {
-	var tracer opentracing.Tracer
-	var span opentracing.Span
-
-	if parent := opentracing.SpanFromContext(ctx); parent != nil {
-		pctx := parent.Context()
-		if tracer = opentracing.GlobalTracer(); tracer != nil {
-			span = tracer.StartSpan("SendWithTemplate", opentracing.ChildOf(pctx))
-			defer span.Finish()
-		}
-	}
-
-	dt := make(map[string]interface{}, 1)
-	dt["phone"] = to
-
-	ntf := notif.Notification{
-		Data: dt,
-		Type: "SMS",
-	}
-	ps := make([]notif.Params, len(params))
-	cc := 0
-	for k, v := range params {
-		ps[cc] = notif.Params{Parameter: k, ParameterValue: v}
-		cc++
-	}
-
-	if notifire, err := notif.GetNotifier("SMS"); err == nil {
-		err := notifire.SendWithTemplate(ctx, ntf, ps, template)
-		if err != nil {
-			return "ERROR IN SEND SMS", "FAILED", err
-		}
-	}
-	return message, status, err
 }
