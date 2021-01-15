@@ -27,9 +27,8 @@ message SMSReply {
 message SMSTRequest {
  string to = 1;
  string template = 2;
- string time  = 3;
- repeated Any params   = 4;
- repeated Any data  = 5;
+ repeated Any params   = 3;
+ repeated Any data  = 4;
 }
 
 message SMSTReply {

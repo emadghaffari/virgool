@@ -60,7 +60,7 @@ func decodeSMSTRequest(_ context.Context, r interface{}) (interface{}, error) {
 		vars[k.Key] = k.Value
 	}
 
-	return endpoint.SMSTRequest{To: rq.To, Params: vars, Template: rq.Template, Time: rq.Time, Data: rq.Data}, nil
+	return endpoint.SMSTRequest{To: rq.To, Params: vars, Template: rq.Template, Data: rq.Data}, nil
 }
 
 // encodeSMSResponse is a transport/grpc.EncodeResponseFunc that converts
