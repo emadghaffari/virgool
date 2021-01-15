@@ -19,23 +19,21 @@ func makeSMSHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) g
 
 // decodeSMSResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain SMS request.
-// TODO implement the decoder
 func decodeSMSRequest(_ context.Context, r interface{}) (interface{}, error) {
 	rq := r.(*pb.SMSRequest)
-	return endpoint.EmailRequest{To: rq.To, Body: rq.Body, Data: rq.Data}, nil
+	return endpoint.SMSRequest{To: rq.To, Body: rq.Body}, nil
 }
 
 // encodeSMSResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeSMSResponse(_ context.Context, r interface{}) (interface{}, error) {
 	rsp := r.(endpoint.SMSResponse)
 
 	if rsp.Err != nil {
-		return pb.SMSReply{Message: rsp.Message, Status: rsp.Status}, rsp.Err
+		return &pb.SMSReply{Message: rsp.Message, Status: rsp.Status}, rsp.Err
 	}
 
-	return pb.EmailReply{Message: rsp.Message, Status: rsp.Status}, nil
+	return &pb.SMSReply{Message: rsp.Message, Status: rsp.Status}, nil
 }
 func (g *grpcServer) SMS(ctx context1.Context, req *pb.SMSRequest) (*pb.SMSReply, error) {
 	_, rep, err := g.sMS.ServeGRPC(ctx, req)
@@ -60,7 +58,7 @@ func decodeSMSTRequest(_ context.Context, r interface{}) (interface{}, error) {
 		vars[k.Key] = k.Value
 	}
 
-	return endpoint.SMSTRequest{To: rq.To, Params: vars, Template: rq.Template, Data: rq.Data}, nil
+	return endpoint.SMSTRequest{To: rq.To, Params: vars, Template: rq.Template}, nil
 }
 
 // encodeSMSResponse is a transport/grpc.EncodeResponseFunc that converts
@@ -69,10 +67,10 @@ func encodeSMSTResponse(_ context.Context, r interface{}) (interface{}, error) {
 	rsp := r.(endpoint.SMSTResponse)
 
 	if rsp.Err != nil {
-		return pb.SMSReply{Message: rsp.Message, Status: rsp.Status}, rsp.Err
+		return &pb.SMSTReply{Message: rsp.Message, Status: rsp.Status}, rsp.Err
 	}
 
-	return pb.EmailReply{Message: rsp.Message, Status: rsp.Status}, nil
+	return &pb.SMSTReply{Message: rsp.Message, Status: rsp.Status}, nil
 }
 func (g *grpcServer) SMST(ctx context1.Context, req *pb.SMSTRequest) (*pb.SMSTReply, error) {
 	_, rep, err := g.sMST.ServeGRPC(ctx, req)
@@ -100,10 +98,10 @@ func encodeEmailResponse(_ context.Context, r interface{}) (interface{}, error) 
 	rsp := r.(endpoint.EmailResponse)
 
 	if rsp.Err != nil {
-		return pb.EmailReply{Message: rsp.Message, Status: rsp.Status}, rsp.Err
+		return &pb.EmailReply{Message: rsp.Message, Status: rsp.Status}, rsp.Err
 	}
 
-	return pb.EmailReply{Message: rsp.Message, Status: rsp.Status}, nil
+	return &pb.EmailReply{Message: rsp.Message, Status: rsp.Status}, nil
 }
 
 func (g *grpcServer) Email(ctx context1.Context, req *pb.EmailRequest) (*pb.EmailReply, error) {

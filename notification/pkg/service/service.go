@@ -13,8 +13,8 @@ import (
 // NotificationService describes the service.
 type NotificationService interface {
 	// Add your methods here
-	SMS(ctx context.Context, to, body string, data interface{}) (message, status string, err error)
-	SMST(ctx context.Context, to string, params map[string]string, template string, time string, data interface{}) (message, status string, err error)
+	SMS(ctx context.Context, to, body string) (message, status string, err error)
+	SMST(ctx context.Context, to string, params map[string]string, template string) (message, status string, err error)
 	Email(ctx context.Context, to, body string, data interface{}) (message, status string, err error)
 	Verify(ctx context.Context, phone, code string) (message, status string, data interface{}, err error)
 }
@@ -22,7 +22,7 @@ type NotificationService interface {
 type basicNotificationService struct{}
 
 // send sms with body
-func (b *basicNotificationService) SMS(ctx context.Context, to string, body string, data interface{}) (message string, status string, err error) {
+func (b *basicNotificationService) SMS(ctx context.Context, to string, body string) (message string, status string, err error) {
 	var tracer opentracing.Tracer
 	var span opentracing.Span
 
@@ -34,7 +34,14 @@ func (b *basicNotificationService) SMS(ctx context.Context, to string, body stri
 		}
 	}
 
-	ntf := notif.Notification{}
+	objs := make(map[string]interface{}, 2)
+	objs["phone"] = to
+	objs["body"] = body
+
+	ntf := notif.Notification{
+		Data: objs,
+		Type: "SMS",
+	}
 
 	if notifire, err := notif.GetNotifier("SMS"); err == nil {
 		err := notifire.SendWithBody(ctx, ntf, notif.Line(conf.GlobalConfigs.Notif.SMS.Send.LineNumber[0]))
@@ -43,7 +50,7 @@ func (b *basicNotificationService) SMS(ctx context.Context, to string, body stri
 		}
 	}
 
-	return message, status, err
+	return "SUCCESS", "OK", err
 }
 
 // FIXME fix Email
@@ -89,7 +96,37 @@ func New(middleware []Middleware) NotificationService {
 	return svc
 }
 
-func (b *basicNotificationService) SMST(ctx context.Context, to string, params map[string]string, template string, time string, data interface{}) (message string, status string, err error) {
-	// TODO implement the business logic of SMST
+func (b *basicNotificationService) SMST(ctx context.Context, to string, params map[string]string, template string) (message string, status string, err error) {
+	var tracer opentracing.Tracer
+	var span opentracing.Span
+
+	if parent := opentracing.SpanFromContext(ctx); parent != nil {
+		pctx := parent.Context()
+		if tracer = opentracing.GlobalTracer(); tracer != nil {
+			span = tracer.StartSpan("SendWithTemplate", opentracing.ChildOf(pctx))
+			defer span.Finish()
+		}
+	}
+
+	dt := make(map[string]interface{}, 1)
+	dt["phone"] = to
+
+	ntf := notif.Notification{
+		Data: dt,
+		Type: "SMS",
+	}
+	ps := make([]notif.Params, len(params))
+	cc := 0
+	for k, v := range params {
+		ps[cc] = notif.Params{Parameter: k, ParameterValue: v}
+		cc++
+	}
+
+	if notifire, err := notif.GetNotifier("SMS"); err == nil {
+		err := notifire.SendWithTemplate(ctx, ntf, ps, template)
+		if err != nil {
+			return "ERROR IN SEND SMS", "FAILED", err
+		}
+	}
 	return message, status, err
 }

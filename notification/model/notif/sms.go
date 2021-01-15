@@ -61,6 +61,12 @@ func (s *SMS) SendWithTemplate(ctx context.Context, notif Notification, params [
 		},
 	}
 
+	fmt.Println("//////////////////////////")
+	fmt.Println(headers)
+	fmt.Println(string(body))
+	fmt.Println(conf.GlobalConfigs.Notif.SMS.Send.TemplateURL)
+	fmt.Println("//////////////////////////")
+
 	if err := s.send("POST", conf.GlobalConfigs.Notif.SMS.Send.TemplateURL, headers, body); err != nil {
 		return err
 	}

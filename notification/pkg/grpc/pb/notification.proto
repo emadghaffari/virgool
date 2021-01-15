@@ -15,7 +15,6 @@ service Notification {
 message SMSRequest {
  string to   = 1;
  string body = 2;
- repeated Any data = 3;
 }
 
 message SMSReply {
@@ -28,7 +27,6 @@ message SMSTRequest {
  string to = 1;
  string template = 2;
  repeated Any params   = 3;
- repeated Any data  = 4;
 }
 
 message SMSTReply {

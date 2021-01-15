@@ -10,9 +10,8 @@ import (
 
 // SMSRequest collects the request parameters for the SMS method.
 type SMSRequest struct {
-	To   string      `json:"to"`
-	Body string      `json:"body"`
-	Data interface{} `json:"data"`
+	To   string `json:"to"`
+	Body string `json:"body"`
 }
 
 // SMSResponse collects the response parameters for the SMS method.
@@ -26,7 +25,7 @@ type SMSResponse struct {
 func MakeSMSEndpoint(s service.NotificationService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SMSRequest)
-		message, status, err := s.SMS(ctx, req.To, req.Body, req.Data)
+		message, status, err := s.SMS(ctx, req.To, req.Body)
 		return SMSResponse{
 			Err:     err,
 			Message: message,
@@ -116,7 +115,6 @@ type Failure interface {
 func (e Endpoints) SMS(ctx context.Context, to string, body string, data interface{}) (message string, status string, err error) {
 	request := SMSRequest{
 		Body: body,
-		Data: data,
 		To:   to,
 	}
 	response, err := e.SMSEndpoint(ctx, request)
@@ -158,7 +156,6 @@ type SMSTRequest struct {
 	To       string            `json:"to"`
 	Params   map[string]string `json:"params"`
 	Template string            `json:"template"`
-	Data     interface{}       `json:"data"`
 }
 
 // SMSTResponse collects the response parameters for the SMST method.
@@ -172,7 +169,7 @@ type SMSTResponse struct {
 func MakeSMSTEndpoint(s service.NotificationService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SMSTRequest)
-		message, status, err := s.SMST(ctx, req.To, req.Params, req.Template, req.Data)
+		message, status, err := s.SMST(ctx, req.To, req.Params, req.Template)
 		return SMSTResponse{
 			Err:     err,
 			Message: message,
@@ -189,7 +186,6 @@ func (r SMSTResponse) Failed() error {
 // SMST implements Service. Primarily useful in a client.
 func (e Endpoints) SMST(ctx context.Context, to string, params map[string]string, template string, data interface{}) (message string, status string, err error) {
 	request := SMSTRequest{
-		Data:     data,
 		Params:   params,
 		Template: template,
 		To:       to,
