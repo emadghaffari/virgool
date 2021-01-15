@@ -15,7 +15,7 @@ import (
 // LoadGlobalConfiguration returns configs
 func LoadGlobalConfiguration(filename string) error {
 
-	if _, err := os.Stat(filename); !os.IsNotExist(err) {
+	if conf.FileExists(filename) {
 		if err := localEnvironment(filename); err != nil {
 			return err
 		}
