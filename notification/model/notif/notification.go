@@ -5,6 +5,16 @@ import (
 	"fmt"
 )
 
+type notification string
+
+const (
+	// EMAIL for get Email object
+	EMAIL notification = "EMAIL"
+
+	// SMS for get sms object
+	SMS notification = "SMS"
+)
+
 // Notifier interface
 type Notifier interface {
 	SendWithTemplate(ctx context.Context, notif Notification, params []Params, template string) error
@@ -21,17 +31,36 @@ type Notification struct {
 	line         string      `default:""`
 }
 
+// Params struct
+type Params struct {
+	Parameter      string
+	ParameterValue interface{}
+}
+
 // Option func for SMS
 type Option func(*Notification)
 
 // GetNotifier func
-func GetNotifier(t string) (Notifier, error) {
+func GetNotifier(t notification) (Notifier, error) {
 	switch t {
 	case "SMS":
-		return new(SMS), nil
+		return new(sms), nil
+	case "EMAIL":
+		return new(email), nil
 	default:
 		return nil, fmt.Errorf("Not Found")
 	}
+}
+
+// GetType for types we use when need to send a notif
+func GetType(t string) notification {
+	switch t {
+	case "SMS":
+		return SMS
+	case "EMAIL":
+		return EMAIL
+	}
+	return ""
 }
 
 // SendDateTime Option func

@@ -14,27 +14,21 @@ import (
 	"github.com/emadghaffari/virgool/notification/conf"
 )
 
-// SMS struct
-type SMS struct {
-	TokenKey     string
-	IsSuccessful bool
-}
-
-// Params struct
-type Params struct {
-	Parameter      string
-	ParameterValue interface{}
+// sms struct
+type sms struct {
+	TokenKey     string `json:"TokenKey"`
+	IsSuccessful bool   `json:"IsSuccessful"`
 }
 
 // SendWithTemplate meth
 // Need Phone in Data Params
-func (s *SMS) SendWithTemplate(ctx context.Context, notif Notification, params []Params, template string) error {
+func (s *sms) SendWithTemplate(ctx context.Context, notif Notification, params []Params, template string) error {
 	// Validate Phone number exists in notif
 	mobile, ok := notif.Data.(map[string]interface{})["phone"].(string)
 	if !ok {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Get Phone Number From Notif Data: %v", notif),
-		}).Warn(fmt.Sprintf("Error in Get Phone Number From Notif Data: %v", notif))
+			"error": fmt.Sprintf("SMS - Error in Get Phone Number From Notif Data: %v", notif),
+		}).Warn(fmt.Sprintf("SMS - Error in Get Phone Number From Notif Data: %v", notif))
 		return fmt.Errorf("Phone not exists")
 	}
 
@@ -46,8 +40,8 @@ func (s *SMS) SendWithTemplate(ctx context.Context, notif Notification, params [
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Marshal Send SMS Data: %s", err.Error()),
-		}).Warn(fmt.Sprintf("Error in Marshal Send SMS Data: %s", err.Error()))
+			"error": fmt.Sprintf("SMS - Error in Marshal Send SMS Data: %s", err.Error()),
+		}).Warn(fmt.Sprintf("SMS - Error in Marshal Send SMS Data: %s", err.Error()))
 		return err
 	}
 
@@ -61,12 +55,6 @@ func (s *SMS) SendWithTemplate(ctx context.Context, notif Notification, params [
 		},
 	}
 
-	fmt.Println("//////////////////////////")
-	fmt.Println(headers)
-	fmt.Println(string(body))
-	fmt.Println(conf.GlobalConfigs.Notif.SMS.Send.TemplateURL)
-	fmt.Println("//////////////////////////")
-
 	if err := s.send("POST", conf.GlobalConfigs.Notif.SMS.Send.TemplateURL, headers, body); err != nil {
 		return err
 	}
@@ -76,13 +64,13 @@ func (s *SMS) SendWithTemplate(ctx context.Context, notif Notification, params [
 
 // SendWithBody meth
 // Need Phone,Body in Data Params
-func (s *SMS) SendWithBody(ctx context.Context, notif Notification, options ...Option) error {
+func (s *sms) SendWithBody(ctx context.Context, notif Notification, options ...Option) error {
 	// Validate Phone number exists in notif
 	mobile, ok := notif.Data.(map[string]interface{})["phone"].(string)
 	if !ok {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Get Phone Number From Notif Data: %v", notif),
-		}).Warn(fmt.Sprintf("Error in Get Phone Number From Notif Data: %v", notif))
+			"error": fmt.Sprintf("SMS - Error in Get Phone Number From Notif Data: %v", notif),
+		}).Warn(fmt.Sprintf("SMS - Error in Get Phone Number From Notif Data: %v", notif))
 		return fmt.Errorf("Phone not exists")
 	}
 
@@ -90,8 +78,8 @@ func (s *SMS) SendWithBody(ctx context.Context, notif Notification, options ...O
 	txt, ok := notif.Data.(map[string]interface{})["body"].(string)
 	if !ok {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Get Phone Number From Notif Data: %v", notif),
-		}).Warn(fmt.Sprintf("Error in Get Phone Number From Notif Data: %v", notif))
+			"error": fmt.Sprintf("SMS - Error in Get Phone Number From Notif Data: %v", notif),
+		}).Warn(fmt.Sprintf("SMS - Error in Get Phone Number From Notif Data: %v", notif))
 		return fmt.Errorf("Phone not exists")
 	}
 
@@ -109,8 +97,8 @@ func (s *SMS) SendWithBody(ctx context.Context, notif Notification, options ...O
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Marshal Send SMS Data: %s", err.Error()),
-		}).Warn(fmt.Sprintf("Error in Marshal Send SMS Data: %s", err.Error()))
+			"error": fmt.Sprintf("SMS - Error in Marshal Send SMS Data: %s", err.Error()),
+		}).Warn(fmt.Sprintf("SMS - Error in Marshal Send SMS Data: %s", err.Error()))
 		return err
 	}
 
@@ -131,7 +119,7 @@ func (s *SMS) SendWithBody(ctx context.Context, notif Notification, options ...O
 }
 
 // Get Token We Need for every SMS We Send from sms.ir
-func (s *SMS) token() error {
+func (s *sms) token() error {
 	// try to Marshal Api key, Secret key
 	body, err := json.Marshal(map[string]string{
 		"UserApiKey": conf.GlobalConfigs.Notif.SMS.UserAPIKey,
@@ -139,8 +127,8 @@ func (s *SMS) token() error {
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Marshal Data sms.go: %s", err.Error()),
-		}).Warn(fmt.Sprintf("Error in Marshal Data sms.go: %s", err.Error()))
+			"error": fmt.Sprintf("SMS - Error in Marshal Data sms.go: %s", err.Error()),
+		}).Warn(fmt.Sprintf("SMS - Error in Marshal Data sms.go: %s", err.Error()))
 		return err
 	}
 
@@ -169,8 +157,8 @@ func (s *SMS) token() error {
 	resp, err := client.Do(request)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Send SMS: %s", err.Error()),
-		}).Warn(fmt.Sprintf("Error in Send SMS: %s", err.Error()))
+			"error": fmt.Sprintf("SMS - Error in Get Token: %s", err.Error()),
+		}).Warn(fmt.Sprintf("SMS - Error in Get Token: %s", err.Error()))
 		return err
 	}
 	defer resp.Body.Close()
@@ -179,33 +167,33 @@ func (s *SMS) token() error {
 	bt, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Read Response Body After Send SMS: %s", err.Error()),
+			"error": fmt.Sprintf("SMS - Error in Read Response Body After Send SMS: %s", err.Error()),
 			"msg":   string(bt),
-		}).Warn(fmt.Sprintf("Error in Read Response Body After Send SMS: %s", err.Error()))
+		}).Warn(fmt.Sprintf("SMS - Error in Read Response Body After Send SMS: %s", err.Error()))
 		return err
 	}
 
 	// Try To Unmarshal Data
 	if err := json.Unmarshal(bt, &s); err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Unmarshal Response Data For Sended SMS: %s", err.Error()),
-		}).Warn(fmt.Sprintf("Error in Unmarshal Response Data For Sended SMS: %s", err.Error()))
+			"error": fmt.Sprintf("SMS - Error in Unmarshal Response Data For Sended SMS: %s", err.Error()),
+		}).Warn(fmt.Sprintf("SMS - Error in Unmarshal Response Data For Sended SMS: %s", err.Error()))
 		return err
 	}
 
 	// Check if IsSuccessful or Not!
 	if s.IsSuccessful == false {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Send SMS: %s", string(bt)),
+			"error": fmt.Sprintf("SMS - Error in Get Token {is not Successful}: %s", string(bt)),
 			"body":  string(bt),
-		}).Warn(fmt.Sprintf("Error in Send SMS: %s", string(bt)))
+		}).Warn(fmt.Sprintf("SMS - Error in Get Token {is not Successful}"))
 		return err
 	}
 
 	return nil
 }
 
-func (s *SMS) send(method, url string, headers []struct {
+func (s *sms) send(method, url string, headers []struct {
 	Header string
 	Vaule  string
 }, body []byte) error {
@@ -231,8 +219,8 @@ func (s *SMS) send(method, url string, headers []struct {
 	resp, err := client.Do(request)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Send SMS: %s", err.Error()),
-		}).Warn(fmt.Sprintf("Error in Send SMS: %s", err.Error()))
+			"error": fmt.Sprintf("SMS - Error in Send SMS: %s", err.Error()),
+		}).Warn(fmt.Sprintf("SMS - Error in Send SMS: %s", err.Error()))
 		return err
 	}
 	defer resp.Body.Close()
@@ -241,25 +229,25 @@ func (s *SMS) send(method, url string, headers []struct {
 	bt, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Read Response Body After Send SMS: %s", err.Error()),
+			"error": fmt.Sprintf("SMS - Error in Read Response Body After Send SMS: %s", err.Error()),
 			"msg":   string(bt),
-		}).Warn(fmt.Sprintf("Error in Read Response Body After Send SMS: %s", err.Error()))
+		}).Warn(fmt.Sprintf("SMS - Error in Read Response Body After Send SMS: %s", err.Error()))
 		return err
 	}
 
 	// Try To Unmarshal Data
 	if err := json.Unmarshal(bt, &s); err != nil {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Unmarshal Response Data For Sended SMS: %s", err.Error()),
-		}).Warn(fmt.Sprintf("Error in Unmarshal Response Data For Sended SMS: %s", err.Error()))
+			"error": fmt.Sprintf("SMS - Error in Unmarshal Response Data For Sended SMS: %s", err.Error()),
+		}).Warn(fmt.Sprintf("SMS - Error in Unmarshal Response Data For Sended SMS: %s", err.Error()))
 		return err
 	}
 
 	// Check if IsSuccessful or Not!
 	if s.IsSuccessful == false {
 		logrus.WithFields(logrus.Fields{
-			"error": fmt.Sprintf("Error in Send SMS: %s", string(bt)),
-		}).Warn(fmt.Sprintf("Error in Send SMS"))
+			"error": fmt.Sprintf("SMS - Error in Send SMS: %s", string(bt)),
+		}).Warn(fmt.Sprintf("SMS - Error in Send SMS"))
 		return err
 	}
 
