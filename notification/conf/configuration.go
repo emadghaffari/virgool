@@ -98,7 +98,8 @@ type Topic struct {
 
 // Notif struct
 type Notif struct {
-	SMS sms
+	SMS   sms
+	Email email
 }
 
 type sms struct {
@@ -117,5 +118,17 @@ type sms struct {
 			TemplateID  string `yaml:"notif.sms.send.verify.templateId"`
 			ContentType string `yaml:"notif.sms.send.verify.contentType"`
 		}
+	}
+}
+
+type email struct {
+	Driver   string `yaml:"notif.email.driver"`
+	Host     string `yaml:"notif.email.host"`
+	Port     int    `yaml:"notif.email.port"`
+	Username string `yaml:"notif.email.username"`
+	Password string `yaml:"notif.email.password"`
+	Identity string `yaml:"notif.email.identity"`
+	Send     struct {
+		Template string `yaml:"notif.email.send.template"`
 	}
 }
