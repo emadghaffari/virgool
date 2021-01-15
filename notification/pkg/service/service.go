@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/opentracing/opentracing-go"
 
 	"github.com/emadghaffari/virgool/notification/conf"
 	"github.com/emadghaffari/virgool/notification/database/redis"
 	"github.com/emadghaffari/virgool/notification/model/notif"
+	"github.com/emadghaffari/virgool/notification/pkg/grpc/pb"
 )
 
 // NotificationService describes the service.
@@ -102,15 +102,12 @@ func (b *basicNotificationService) Email(ctx context.Context, to string, body st
 		}
 	}
 
-	objs := make(map[string]interface{}, 2)
+	objs := make(map[string]interface{}, len(data.([]*pb.Any))+2)
 	objs["to"] = to
 	objs["body"] = body
-	objs["from"] = "mail@gmail.com"
-	objs["subject"] = "subjct"
-
-	fmt.Println("//////////")
-	fmt.Println(objs)
-	fmt.Println("//////////")
+	for _, v := range data.([]*pb.Any) {
+		objs[v.Key] = v.Value
+	}
 
 	ntf := notif.Notification{
 		Data: objs,
