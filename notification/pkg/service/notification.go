@@ -34,7 +34,7 @@ func (s *streamNotificationService) Store(ctx context.Context, code int, item no
 	data := item.Data.(map[string]interface{})
 
 	if notifire, err := notif.GetNotifier(item.Type); err == nil {
-		err := notifire.SendWithTemplate(ctx, item, []notif.SMSParams{
+		err := notifire.SendWithTemplate(ctx, item, []notif.Params{
 			{Parameter: "Code", ParameterValue: code},
 		}, conf.GlobalConfigs.Notif.SMS.Send.Verify.TemplateID)
 		if err != nil {

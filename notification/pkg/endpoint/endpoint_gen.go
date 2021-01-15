@@ -11,6 +11,7 @@ import (
 // single parameter.
 type Endpoints struct {
 	SMSEndpoint    endpoint.Endpoint
+	SMSTEndpoint   endpoint.Endpoint
 	EmailEndpoint  endpoint.Endpoint
 	VerifyEndpoint endpoint.Endpoint
 }
@@ -21,10 +22,14 @@ func New(s service.NotificationService, mdw map[string][]endpoint.Middleware) En
 	eps := Endpoints{
 		EmailEndpoint:  MakeEmailEndpoint(s),
 		SMSEndpoint:    MakeSMSEndpoint(s),
+		SMSTEndpoint:   MakeSMSTEndpoint(s),
 		VerifyEndpoint: MakeVerifyEndpoint(s),
 	}
 	for _, m := range mdw["SMS"] {
 		eps.SMSEndpoint = m(eps.SMSEndpoint)
+	}
+	for _, m := range mdw["SMST"] {
+		eps.SMSTEndpoint = m(eps.SMSTEndpoint)
 	}
 	for _, m := range mdw["Email"] {
 		eps.EmailEndpoint = m(eps.EmailEndpoint)

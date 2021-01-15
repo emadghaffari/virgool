@@ -3,33 +3,65 @@ syntax = "proto3";
 package pb;
 
 
+
 //The Notification service definition.
 service Notification {
- rpc SMS    (SMSRequest   ) returns (SMSReply   );
+ rpc SMS (SMSRequest   ) returns (SMSReply   );
+ rpc SMST   (SMSTRequest  ) returns (SMSTReply  );
  rpc Email  (EmailRequest ) returns (EmailReply );
  rpc Verify (VerifyRequest) returns (VerifyReply);
 }
 
-message SMSRequest {}
+message SMSRequest {
+ string to   = 1;
+ string body = 2;
+ repeated Any data = 3;
+}
 
-message SMSReply {}
+message SMSReply {
+ string message = 1;
+ string status  = 2;
+ repeated Any data = 3;
+}
 
-message EmailRequest {}
+message SMSTRequest {
+ string to = 1;
+ string template = 2;
+ string time  = 3;
+ repeated Any params   = 4;
+ repeated Any data  = 5;
+}
 
-message EmailReply {}
+message SMSTReply {
+ string message = 1;
+ string status  = 2;
+ repeated Any data = 3;
+}
+
+message EmailRequest {
+ string to   = 1;
+ string body = 2;
+ repeated Any data = 3;
+}
+
+message EmailReply {
+ string message = 1;
+ string status  = 2;
+ repeated Any data = 3;
+}
 
 message VerifyRequest {
-    string phone = 1;
-    string code = 2;
+ string phone = 1;
+ string code  = 2;
 }
 
 message VerifyReply {
-    string message = 1;
-    string status = 2;
-    repeated Any data = 3;
+ string message = 1;
+ string status  = 2;
+ repeated Any data = 3;
 }
 
 message Any {
-  string key = 1;
-  string value = 2;
+ string key   = 1;
+ string value = 2;
 }

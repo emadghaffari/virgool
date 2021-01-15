@@ -32,6 +32,14 @@ func (l loggingMiddleware) SMS(ctx context.Context, to string, body string, data
 	}()
 	return l.next.SMS(ctx, to, body, data)
 }
+
+func (l loggingMiddleware) SMST(ctx context.Context, to string, params map[string]string, template string, time string, data interface{}) (message, status string, err error) {
+	defer func() {
+		l.logger.Log("method", "SMS", "to", to, "params", params, "template", template, "message", "time", time, "data", data, message, "status", status, "err", err)
+	}()
+	return l.next.SMST(ctx, to, params, template, time, data)
+}
+
 func (l loggingMiddleware) Email(ctx context.Context, to string, body string, data interface{}) (message string, status string, err error) {
 	defer func() {
 		l.logger.Log("method", "Email", "to", to, "body", body, "data", data, "message", message, "status", status, "err", err)

@@ -2,8 +2,10 @@ package endpoint
 
 import (
 	"context"
-	service "github.com/emadghaffari/virgool/notification/pkg/service"
+
 	endpoint "github.com/go-kit/kit/endpoint"
+
+	service "github.com/emadghaffari/virgool/notification/pkg/service"
 )
 
 // SMSRequest collects the request parameters for the SMS method.
@@ -149,4 +151,54 @@ func (e Endpoints) Verify(ctx context.Context, phone string, code string) (messa
 		return
 	}
 	return response.(VerifyResponse).Message, response.(VerifyResponse).Status, response.(VerifyResponse).Data, response.(VerifyResponse).Err
+}
+
+// SMSTRequest collects the request parameters for the SMST method.
+type SMSTRequest struct {
+	To       string            `json:"to"`
+	Params   map[string]string `json:"params"`
+	Template string            `json:"template"`
+	Time     string            `json:"time"`
+	Data     interface{}       `json:"data"`
+}
+
+// SMSTResponse collects the response parameters for the SMST method.
+type SMSTResponse struct {
+	Message string `json:"message"`
+	Status  string `json:"status"`
+	Err     error  `json:"err"`
+}
+
+// MakeSMSTEndpoint returns an endpoint that invokes SMST on the service.
+func MakeSMSTEndpoint(s service.NotificationService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SMSTRequest)
+		message, status, err := s.SMST(ctx, req.To, req.Params, req.Template, req.Time, req.Data)
+		return SMSTResponse{
+			Err:     err,
+			Message: message,
+			Status:  status,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r SMSTResponse) Failed() error {
+	return r.Err
+}
+
+// SMST implements Service. Primarily useful in a client.
+func (e Endpoints) SMST(ctx context.Context, to string, params map[string]string, template string, time string, data interface{}) (message string, status string, err error) {
+	request := SMSTRequest{
+		Data:     data,
+		Params:   params,
+		Template: template,
+		Time:     time,
+		To:       to,
+	}
+	response, err := e.SMSTEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(SMSTResponse).Message, response.(SMSTResponse).Status, response.(SMSTResponse).Err
 }

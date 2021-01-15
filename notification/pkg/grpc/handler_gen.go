@@ -10,6 +10,7 @@ import (
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer
 type grpcServer struct {
 	sMS    grpc.Handler
+	sMST   grpc.Handler
 	email  grpc.Handler
 	verify grpc.Handler
 }
@@ -18,6 +19,7 @@ func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.Serve
 	return &grpcServer{
 		email:  makeEmailHandler(endpoints, options["Email"]),
 		sMS:    makeSMSHandler(endpoints, options["SMS"]),
+		sMST:   makeSMSTHandler(endpoints, options["SMST"]),
 		verify: makeVerifyHandler(endpoints, options["Verify"]),
 	}
 }
