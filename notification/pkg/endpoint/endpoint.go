@@ -158,7 +158,6 @@ type SMSTRequest struct {
 	To       string            `json:"to"`
 	Params   map[string]string `json:"params"`
 	Template string            `json:"template"`
-	Time     string            `json:"time"`
 	Data     interface{}       `json:"data"`
 }
 
@@ -173,7 +172,7 @@ type SMSTResponse struct {
 func MakeSMSTEndpoint(s service.NotificationService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SMSTRequest)
-		message, status, err := s.SMST(ctx, req.To, req.Params, req.Template, req.Time, req.Data)
+		message, status, err := s.SMST(ctx, req.To, req.Params, req.Template, req.Data)
 		return SMSTResponse{
 			Err:     err,
 			Message: message,
@@ -188,12 +187,11 @@ func (r SMSTResponse) Failed() error {
 }
 
 // SMST implements Service. Primarily useful in a client.
-func (e Endpoints) SMST(ctx context.Context, to string, params map[string]string, template string, time string, data interface{}) (message string, status string, err error) {
+func (e Endpoints) SMST(ctx context.Context, to string, params map[string]string, template string, data interface{}) (message string, status string, err error) {
 	request := SMSTRequest{
 		Data:     data,
 		Params:   params,
 		Template: template,
-		Time:     time,
 		To:       to,
 	}
 	response, err := e.SMSTEndpoint(ctx, request)
