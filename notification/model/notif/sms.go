@@ -80,9 +80,8 @@ func (s *SMS) SendWithBody(ctx context.Context, notif Notification, options ...O
 		return fmt.Errorf("Phone not exists")
 	}
 
-	// FIXME change phone into body
 	// Validate Phone number exists in notif
-	txt, ok := notif.Data.(map[string]interface{})["phone"].(string)
+	txt, ok := notif.Data.(map[string]interface{})["body"].(string)
 	if !ok {
 		logrus.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("Error in Get Phone Number From Notif Data: %v", notif),
