@@ -14,11 +14,10 @@ import (
 	"github.com/Shopify/sarama"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
-	prometheus "github.com/go-kit/kit/metrics/prometheus"
+	http1 "github.com/go-kit/kit/transport/http"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	group "github.com/oklog/oklog/pkg/group"
 	"github.com/opentracing/opentracing-go"
-	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
@@ -36,6 +35,7 @@ import (
 	endpoint "github.com/emadghaffari/virgool/notification/pkg/endpoint"
 	grpc "github.com/emadghaffari/virgool/notification/pkg/grpc"
 	pb "github.com/emadghaffari/virgool/notification/pkg/grpc/pb"
+	pkghttp "github.com/emadghaffari/virgool/notification/pkg/http"
 	service "github.com/emadghaffari/virgool/notification/pkg/service"
 )
 
@@ -149,6 +149,22 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	})
 
 }
+
+// initHttpHandler func
+func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
+	httpHandler := pkghttp.NewHTTPHandler(endpoints, map[string][]http1.ServerOption{})
+	httpListener, err := net.Listen("tcp", conf.GlobalConfigs.HTTP.Port)
+	if err != nil {
+		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
+	}
+	g.Add(func() error {
+		logger.Log("transport", "HTTP", "addr", conf.GlobalConfigs.HTTP.Port)
+		return http.Serve(httpListener, httpHandler)
+	}, func(error) {
+		httpListener.Close()
+	})
+}
+
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
 	mw = append(mw, service.LoggingMiddleware(logger))
@@ -158,13 +174,14 @@ func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 }
 func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middleware) {
 	mw = map[string][]endpoint1.Middleware{}
-	duration := prometheus.NewSummaryFrom(prometheus1.SummaryOpts{
-		Help:      "Request duration in seconds.",
-		Name:      "request_duration_seconds",
-		Namespace: "example",
-		Subsystem: "notification",
-	}, []string{"method", "success"})
-	addDefaultEndpointMiddleware(logger, duration, mw)
+	// duration := prometheus.NewSummaryFrom(prometheus1.SummaryOpts{
+	// 	Help:      "Request duration in seconds.",
+	// 	Name:      "request_duration_seconds",
+	// 	Namespace: "example",
+	// 	Subsystem: "notification",
+	// }, []string{"method", "success"})
+	// addDefaultEndpointMiddleware(logger, duration, mw)
+	addEndpointMiddlewareToAllMethods(mw, endpoint.LoggingMiddleware(logger))
 	// Add you endpoint middleware here
 
 	return

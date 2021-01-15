@@ -3,39 +3,42 @@ package service
 
 import (
 	endpoint "github.com/emadghaffari/virgool/notification/pkg/endpoint"
-	service "github.com/emadghaffari/virgool/notification/pkg/service"
+	http1 "github.com/emadghaffari/virgool/notification/pkg/http"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
-	prometheus "github.com/go-kit/kit/metrics/prometheus"
 	opentracing "github.com/go-kit/kit/tracing/opentracing"
 	grpc "github.com/go-kit/kit/transport/grpc"
+	http "github.com/go-kit/kit/transport/http"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
 )
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	g = &group.Group{}
+	initHttpHandler(endpoints, g)
 	initGRPCHandler(endpoints, g)
 	return g
+}
+func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]http.ServerOption {
+	options := map[string][]http.ServerOption{
+		"Email":  {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Email", logger))},
+		"SMS":    {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "SMS", logger))},
+		"SMST":   {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "SMST", logger))},
+		"Verify": {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Verify", logger))},
+	}
+	return options
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
 	options := map[string][]grpc.ServerOption{
 		"Email":  {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Email", logger))},
 		"SMS":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "SMS", logger))},
+		"SMST":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "SMST", logger))},
 		"Verify": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Verify", logger))},
 	}
 	return options
 }
-func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
-	mw["SMS"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SMS")), endpoint.InstrumentingMiddleware(duration.With("method", "SMS"))}
-	mw["Email"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Email")), endpoint.InstrumentingMiddleware(duration.With("method", "Email"))}
-	mw["Verify"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Verify")), endpoint.InstrumentingMiddleware(duration.With("method", "Verify"))}
-}
-func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
-	return append(mw, service.LoggingMiddleware(logger))
-}
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"SMS", "Email", "Verify"}
+	methods := []string{"SMS", "SMST", "Email", "Verify"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}
