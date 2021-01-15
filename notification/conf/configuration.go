@@ -110,8 +110,9 @@ type sms struct {
 	}
 
 	Send struct {
-		TemplateURL string `yaml:"notif.sms.send.templateURL"`
-		BodyURL     string `yaml:"notif.sms.send.bodyURL"`
+		TemplateURL string   `yaml:"notif.sms.send.templateURL"`
+		BodyURL     string   `yaml:"notif.sms.send.bodyURL"`
+		LineNumber  []string `yaml:"notif.sms.send.lineNumber"`
 		Verify      struct {
 			TemplateID  string `yaml:"notif.sms.send.verify.templateId"`
 			ContentType string `yaml:"notif.sms.send.verify.contentType"`
