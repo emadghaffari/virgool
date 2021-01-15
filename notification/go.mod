@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/Shopify/sarama v1.27.2
 	github.com/confluentinc/confluent-kafka-go v1.5.2 // indirect
-	github.com/emadghaffari/virgool/auth v0.0.0-20210109212129-313fc2a31ea8 // indirect
+	github.com/emadghaffari/virgool/auth v0.0.0-20210114145456-112f9dedce33
 	github.com/go-kit/kit v0.10.0
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-redis/redis/v8 v8.4.7
@@ -19,10 +19,10 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.4.0+incompatible
-	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
+	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
 	golang.org/x/sys v0.0.0-20210108172913-0df2131ae363 // indirect
 	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0
-	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.5.2
+	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.5.2 // indirect
 )
