@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/Shopify/sarama v1.27.2
 	github.com/confluentinc/confluent-kafka-go v1.5.2 // indirect
-	github.com/emadghaffari/virgool/auth v0.0.0-20210114145456-112f9dedce33
+	github.com/emadghaffari/virgool/auth v0.0.0-20210114145456-112f9dedce33 // indirect
 	github.com/go-kit/kit v0.10.0
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-redis/redis/v8 v8.4.7
@@ -24,5 +24,7 @@ require (
 	golang.org/x/sys v0.0.0-20210108172913-0df2131ae363 // indirect
 	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.5.2 // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
