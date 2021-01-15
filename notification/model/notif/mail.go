@@ -10,6 +10,7 @@ import (
 	gomail "gopkg.in/gomail.v2"
 
 	"github.com/emadghaffari/virgool/notification/conf"
+	"github.com/emadghaffari/virgool/notification/model"
 )
 
 type email struct {
@@ -73,6 +74,12 @@ func (e *email) validate(notif Notification) error {
 		}).Warn(fmt.Sprintf("Mail - Error in Get {from} mail From Notif Data: %v", notif))
 		return fmt.Errorf("Mail - {from} not exists")
 	}
+	if err := model.Validator.Get().Var(from, "required,email"); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Mail - Error in Invalid From Vaule: %v", notif),
+		}).Warn(fmt.Sprintf("Mail - Error in Invalid From Vaule: %v", notif))
+		return fmt.Errorf("Mail - Invalid From Vaule")
+	}
 	e.from = from
 
 	// Validate to exists in notif
@@ -82,6 +89,12 @@ func (e *email) validate(notif Notification) error {
 			"error": fmt.Sprintf("Mail - Error in Get {to} mail From Notif Data: %v", notif),
 		}).Warn(fmt.Sprintf("Mail - Error in Get {to} mail From Notif Data: %v", notif))
 		return fmt.Errorf("Mail - {to} not exists")
+	}
+	if err := model.Validator.Get().Var(to, "required,email"); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": fmt.Sprintf("Mail - Error in Invalid to Vaule: %v", notif),
+		}).Warn(fmt.Sprintf("Mail - Error in Invalid to Vaule: %v", notif))
+		return fmt.Errorf("Mail - Invalid to Vaule")
 	}
 	e.to = to
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/opentracing/opentracing-go"
 
@@ -43,7 +44,7 @@ func (b *basicNotificationService) SMS(ctx context.Context, to string, body stri
 		Type: "SMS",
 	}
 
-	if notifire, err := notif.GetNotifier("SMS"); err == nil {
+	if notifire, err := notif.GetNotifier(notif.SMS); err == nil {
 		err := notifire.SendWithBody(ctx, ntf, notif.Line(conf.GlobalConfigs.Notif.SMS.Send.LineNumber[0]))
 		if err != nil {
 			return "ERROR IN SEND SMS", "FAILED", err
@@ -79,7 +80,7 @@ func (b *basicNotificationService) SMST(ctx context.Context, to string, params m
 		cc++
 	}
 
-	if notifire, err := notif.GetNotifier("SMS"); err == nil {
+	if notifire, err := notif.GetNotifier(notif.SMS); err == nil {
 		err := notifire.SendWithTemplate(ctx, ntf, ps, template)
 		if err != nil {
 			return "ERROR IN SEND SMS", "FAILED", err
@@ -90,8 +91,40 @@ func (b *basicNotificationService) SMST(ctx context.Context, to string, params m
 
 // FIXME fix Email
 func (b *basicNotificationService) Email(ctx context.Context, to string, body string, data interface{}) (message string, status string, err error) {
-	// TODO implement the business logic of Email
-	return message, status, err
+	var tracer opentracing.Tracer
+	var span opentracing.Span
+
+	if parent := opentracing.SpanFromContext(ctx); parent != nil {
+		pctx := parent.Context()
+		if tracer = opentracing.GlobalTracer(); tracer != nil {
+			span = tracer.StartSpan("Email", opentracing.ChildOf(pctx))
+			defer span.Finish()
+		}
+	}
+
+	objs := make(map[string]interface{}, 2)
+	objs["to"] = to
+	objs["body"] = body
+	objs["from"] = "mail@gmail.com"
+	objs["subject"] = "subjct"
+
+	fmt.Println("//////////")
+	fmt.Println(objs)
+	fmt.Println("//////////")
+
+	ntf := notif.Notification{
+		Data: objs,
+		Type: "SMS",
+	}
+
+	if notifire, err := notif.GetNotifier(notif.EMAIL); err == nil {
+		err := notifire.SendWithBody(ctx, ntf, notif.Line(conf.GlobalConfigs.Notif.SMS.Send.LineNumber[0]))
+		if err != nil {
+			return "ERROR IN SEND SMS", "FAILED", err
+		}
+	}
+
+	return "SUCCESS", "OK", err
 }
 func (b *basicNotificationService) Verify(ctx context.Context, phone string, code string) (message string, status string, data interface{}, err error) {
 	var tracer opentracing.Tracer
