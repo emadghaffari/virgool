@@ -7,7 +7,7 @@ import (
 
 // Notifier interface
 type Notifier interface {
-	SendWithTemplate(ctx context.Context, notif Notification, params []SMSParams, template string) error
+	SendWithTemplate(ctx context.Context, notif Notification, params []Params, template string) error
 	SendWithBody(ctx context.Context, notif Notification, options ...Option) error
 }
 

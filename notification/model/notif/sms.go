@@ -20,15 +20,15 @@ type SMS struct {
 	IsSuccessful bool
 }
 
-// SMSParams struct
-type SMSParams struct {
+// Params struct
+type Params struct {
 	Parameter      string
 	ParameterValue interface{}
 }
 
 // SendWithTemplate meth
 // Need Phone in Data Params
-func (s *SMS) SendWithTemplate(ctx context.Context, notif Notification, params []SMSParams, template string) error {
+func (s *SMS) SendWithTemplate(ctx context.Context, notif Notification, params []Params, template string) error {
 	// Validate Phone number exists in notif
 	mobile, ok := notif.Data.(map[string]interface{})["phone"].(string)
 	if !ok {
