@@ -17,39 +17,110 @@ service Blog {
  rpc Upload     (UploadRequest    ) returns (UploadReply    );
 }
 
-message CreatePostRequest {}
+message CreatePostRequest {
+    uint64 userID = 1;
+    string title = 2;
+    string slug = 3;
+    string description = 4;
+    string text = 5;
+    string status = 6;
+    repeated Query params = 7;
+    repeated int64 medias = 8;
+    repeated int64 Tags = 9;
+}
 
-message CreatePostReply {}
+message CreatePostReply {
+    string message = 1;
+    string status  = 2;
+}
 
-message UpdatePostRequest {}
+message UpdatePostRequest {
+    string title = 1;
+    string slug = 2;
+    string description = 3;
+    string text = 4;
+    string status = 5;
+    repeated Query params = 6;
+    repeated int64 medias = 7;
+    repeated int64 Tags = 8;
+}
 
-message UpdatePostReply {}
+message UpdatePostReply {
+    string message = 1;
+    string status  = 2;
+}
 
-message GetPostRequest {}
+message GetPostRequest {
+    repeated Query must = 1;
+    repeated Query should = 2;
+    repeated Query not = 3;
+    repeated Query filter = 4;
+}
 
-message GetPostReply {}
+message GetPostReply {
+    string message = 1;
+    string status  = 2;
+}
 
-message DeletePostRequest {}
+message DeletePostRequest {
+    repeated Query filter = 1;
+}
 
-message DeletePostReply {}
+message DeletePostReply {
+    string message = 1;
+    string status  = 2;
+}
 
-message CreateTagRequest {}
+message CreateTagRequest {
+    string name = 1;
+}
 
-message CreateTagReply {}
+message CreateTagReply {
+    string message = 1;
+    string status  = 2;
+}
 
-message GetTagRequest {}
+message GetTagRequest {
+    repeated Query filter = 1;
+}
 
-message GetTagReply {}
+message GetTagReply {
+    string message = 1;
+    string status  = 2;
+}
 
-message UpdateTagRequest {}
+message UpdateTagRequest {
+ string oldName = 1;
+ string newName = 2;
+}
 
-message UpdateTagReply {}
+message UpdateTagReply {
+    string message = 1;
+    string status  = 2;
+}
 
-message DeleteTagRequest {}
+message DeleteTagRequest {
+    string name = 1;
+}
 
-message DeleteTagReply {}
+message DeleteTagReply {
+    string message = 1;
+    string status  = 2;
+}
 
-message UploadRequest {}
+message UploadRequest {
+    string title = 1;
+    string description = 2;
+    string fileType = 3;
+    bytes data = 4;
+}
 
-message UploadReply {}
+message UploadReply {
+    string message = 1;
+    string status  = 2;
+}
 
+message Query {
+ string key   = 1;
+ string value = 2;
+}
