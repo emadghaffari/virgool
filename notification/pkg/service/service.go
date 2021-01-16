@@ -89,7 +89,6 @@ func (b *basicNotificationService) SMST(ctx context.Context, to string, params m
 	return message, status, err
 }
 
-// FIXME fix Email
 func (b *basicNotificationService) Email(ctx context.Context, to string, body string, data interface{}) (message string, status string, err error) {
 	var tracer opentracing.Tracer
 	var span opentracing.Span
