@@ -2,8 +2,6 @@
 package service
 
 import (
-	endpoint "github.com/emadghaffari/virgool/blog/pkg/endpoint"
-	http1 "github.com/emadghaffari/virgool/blog/pkg/http"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	opentracing "github.com/go-kit/kit/tracing/opentracing"
@@ -11,6 +9,9 @@ import (
 	http "github.com/go-kit/kit/transport/http"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
+
+	endpoint "github.com/emadghaffari/virgool/blog/pkg/endpoint"
+	http1 "github.com/emadghaffari/virgool/blog/pkg/http"
 )
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {

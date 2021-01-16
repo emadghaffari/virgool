@@ -20,6 +20,7 @@ type CreatePostRequest struct {
 	Medias      []int64          `json:"medias"`
 	Tags        []int64          `json:"tags"`
 	Status      model.StatusPost `json:"status"`
+	Token       string           `json:"token"`
 }
 
 // CreatePostResponse collects the response parameters for the CreatePost method.
@@ -33,7 +34,7 @@ type CreatePostResponse struct {
 func MakeCreatePostEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreatePostRequest)
-		message, status, err := s.CreatePost(ctx, req.UserID, req.Title, req.Slug, req.Description, req.Text, req.Params, req.Medias, req.Tags, req.Status)
+		message, status, err := s.CreatePost(ctx, req.UserID, req.Title, req.Slug, req.Description, req.Text, req.Params, req.Medias, req.Tags, req.Status, req.Token)
 		return CreatePostResponse{
 			Err:     err,
 			Message: message,
@@ -57,6 +58,7 @@ type UpdatePostRequest struct {
 	Medias      []int64          `json:"medias"`
 	Tags        []int64          `json:"tags"`
 	Status      model.StatusPost `json:"status"`
+	Token       string           `json:"token"`
 }
 
 // UpdatePostResponse collects the response parameters for the UpdatePost method.
@@ -70,7 +72,7 @@ type UpdatePostResponse struct {
 func MakeUpdatePostEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdatePostRequest)
-		message, status, err := s.UpdatePost(ctx, req.Title, req.Slug, req.Description, req.Text, req.Params, req.Medias, req.Tags, req.Status)
+		message, status, err := s.UpdatePost(ctx, req.Title, req.Slug, req.Description, req.Text, req.Params, req.Medias, req.Tags, req.Status, req.Token)
 		return UpdatePostResponse{
 			Err:     err,
 			Message: message,
@@ -90,6 +92,7 @@ type GetPostRequest struct {
 	Should []*model.Query `json:"should"`
 	Not    []*model.Query `json:"not"`
 	Filter []*model.Query `json:"filter"`
+	Token  string         `json:"token"`
 }
 
 // GetPostResponse collects the response parameters for the GetPost method.
@@ -104,7 +107,7 @@ type GetPostResponse struct {
 func MakeGetPostEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetPostRequest)
-		posts, message, status, err := s.GetPost(ctx, req.Must, req.Should, req.Not, req.Filter)
+		posts, message, status, err := s.GetPost(ctx, req.Must, req.Should, req.Not, req.Filter, req.Token)
 		return GetPostResponse{
 			Err:     err,
 			Message: message,
@@ -122,6 +125,7 @@ func (r GetPostResponse) Failed() error {
 // DeletePostRequest collects the request parameters for the DeletePost method.
 type DeletePostRequest struct {
 	Filter []*model.Query `json:"filter"`
+	Token  string         `json:"token"`
 }
 
 // DeletePostResponse collects the response parameters for the DeletePost method.
@@ -135,7 +139,7 @@ type DeletePostResponse struct {
 func MakeDeletePostEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeletePostRequest)
-		message, status, err := s.DeletePost(ctx, req.Filter)
+		message, status, err := s.DeletePost(ctx, req.Filter, req.Token)
 		return DeletePostResponse{
 			Err:     err,
 			Message: message,
@@ -151,7 +155,8 @@ func (r DeletePostResponse) Failed() error {
 
 // CreateTagRequest collects the request parameters for the CreateTag method.
 type CreateTagRequest struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
 }
 
 // CreateTagResponse collects the response parameters for the CreateTag method.
@@ -165,7 +170,7 @@ type CreateTagResponse struct {
 func MakeCreateTagEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateTagRequest)
-		message, status, err := s.CreateTag(ctx, req.Name)
+		message, status, err := s.CreateTag(ctx, req.Name, req.Token)
 		return CreateTagResponse{
 			Err:     err,
 			Message: message,
@@ -182,6 +187,7 @@ func (r CreateTagResponse) Failed() error {
 // GetTagRequest collects the request parameters for the GetTag method.
 type GetTagRequest struct {
 	Filter []*model.Query `json:"filter"`
+	Token  string         `json:"token"`
 }
 
 // GetTagResponse collects the response parameters for the GetTag method.
@@ -196,7 +202,7 @@ type GetTagResponse struct {
 func MakeGetTagEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetTagRequest)
-		tags, message, status, err := s.GetTag(ctx, req.Filter)
+		tags, message, status, err := s.GetTag(ctx, req.Filter, req.Token)
 		return GetTagResponse{
 			Err:     err,
 			Message: message,
@@ -215,6 +221,7 @@ func (r GetTagResponse) Failed() error {
 type UpdateTagRequest struct {
 	OldName string `json:"old_name"`
 	NewName string `json:"new_name"`
+	Token   string `json:"token"`
 }
 
 // UpdateTagResponse collects the response parameters for the UpdateTag method.
@@ -228,7 +235,7 @@ type UpdateTagResponse struct {
 func MakeUpdateTagEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateTagRequest)
-		message, status, err := s.UpdateTag(ctx, req.OldName, req.NewName)
+		message, status, err := s.UpdateTag(ctx, req.OldName, req.NewName, req.Token)
 		return UpdateTagResponse{
 			Err:     err,
 			Message: message,
@@ -244,7 +251,8 @@ func (r UpdateTagResponse) Failed() error {
 
 // DeleteTagRequest collects the request parameters for the DeleteTag method.
 type DeleteTagRequest struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
 }
 
 // DeleteTagResponse collects the response parameters for the DeleteTag method.
@@ -258,7 +266,7 @@ type DeleteTagResponse struct {
 func MakeDeleteTagEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteTagRequest)
-		message, status, err := s.DeleteTag(ctx, req.Name)
+		message, status, err := s.DeleteTag(ctx, req.Name, req.Token)
 		return DeleteTagResponse{
 			Err:     err,
 			Message: message,
@@ -278,6 +286,7 @@ type UploadRequest struct {
 	Description string       `json:"description"`
 	FileType    string       `json:"file_type"`
 	File        bytes.Buffer `json:"file"`
+	Token       string       `json:"token"`
 }
 
 // UploadResponse collects the response parameters for the Upload method.
@@ -291,7 +300,7 @@ type UploadResponse struct {
 func MakeUploadEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UploadRequest)
-		message, status, err := s.Upload(ctx, req.Title, req.Description, req.FileType, req.File)
+		message, status, err := s.Upload(ctx, req.Title, req.Description, req.FileType, req.File, req.Token)
 		return UploadResponse{
 			Err:     err,
 			Message: message,
@@ -313,7 +322,7 @@ type Failure interface {
 }
 
 // CreatePost implements Service. Primarily useful in a client.
-func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost) (message string, status string, err error) {
+func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
 	request := CreatePostRequest{
 		Description: description,
 		Medias:      medias,
@@ -323,6 +332,7 @@ func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, 
 		Tags:        Tags,
 		Text:        text,
 		Title:       title,
+		Token:       token,
 		UserID:      userID,
 	}
 	response, err := e.CreatePostEndpoint(ctx, request)
@@ -333,7 +343,7 @@ func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, 
 }
 
 // UpdatePost implements Service. Primarily useful in a client.
-func (e Endpoints) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost) (message string, status string, err error) {
+func (e Endpoints) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
 	request := UpdatePostRequest{
 		Description: description,
 		Medias:      medias,
@@ -343,6 +353,7 @@ func (e Endpoints) UpdatePost(ctx context.Context, title string, slug string, de
 		Tags:        Tags,
 		Text:        text,
 		Title:       title,
+		Token:       token,
 	}
 	response, err := e.UpdatePostEndpoint(ctx, request)
 	if err != nil {
@@ -352,12 +363,13 @@ func (e Endpoints) UpdatePost(ctx context.Context, title string, slug string, de
 }
 
 // GetPost implements Service. Primarily useful in a client.
-func (e Endpoints) GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query) (posts []model.Post, message string, status string, err error) {
+func (e Endpoints) GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error) {
 	request := GetPostRequest{
 		Filter: filter,
 		Must:   must,
 		Not:    not,
 		Should: should,
+		Token:  token,
 	}
 	response, err := e.GetPostEndpoint(ctx, request)
 	if err != nil {
@@ -367,8 +379,11 @@ func (e Endpoints) GetPost(ctx context.Context, must []*model.Query, should []*m
 }
 
 // DeletePost implements Service. Primarily useful in a client.
-func (e Endpoints) DeletePost(ctx context.Context, filter []*model.Query) (message string, status string, err error) {
-	request := DeletePostRequest{Filter: filter}
+func (e Endpoints) DeletePost(ctx context.Context, filter []*model.Query, token string) (message string, status string, err error) {
+	request := DeletePostRequest{
+		Filter: filter,
+		Token:  token,
+	}
 	response, err := e.DeletePostEndpoint(ctx, request)
 	if err != nil {
 		return
@@ -377,8 +392,11 @@ func (e Endpoints) DeletePost(ctx context.Context, filter []*model.Query) (messa
 }
 
 // CreateTag implements Service. Primarily useful in a client.
-func (e Endpoints) CreateTag(ctx context.Context, name string) (message string, status string, err error) {
-	request := CreateTagRequest{Name: name}
+func (e Endpoints) CreateTag(ctx context.Context, name string, token string) (message string, status string, err error) {
+	request := CreateTagRequest{
+		Name:  name,
+		Token: token,
+	}
 	response, err := e.CreateTagEndpoint(ctx, request)
 	if err != nil {
 		return
@@ -387,8 +405,11 @@ func (e Endpoints) CreateTag(ctx context.Context, name string) (message string, 
 }
 
 // GetTag implements Service. Primarily useful in a client.
-func (e Endpoints) GetTag(ctx context.Context, filter []*model.Query) (tags []*model.Tag, message string, status string, err error) {
-	request := GetTagRequest{Filter: filter}
+func (e Endpoints) GetTag(ctx context.Context, filter []*model.Query, token string) (tags []*model.Tag, message string, status string, err error) {
+	request := GetTagRequest{
+		Filter: filter,
+		Token:  token,
+	}
 	response, err := e.GetTagEndpoint(ctx, request)
 	if err != nil {
 		return
@@ -397,10 +418,11 @@ func (e Endpoints) GetTag(ctx context.Context, filter []*model.Query) (tags []*m
 }
 
 // UpdateTag implements Service. Primarily useful in a client.
-func (e Endpoints) UpdateTag(ctx context.Context, oldName string, newName string) (message string, status string, err error) {
+func (e Endpoints) UpdateTag(ctx context.Context, oldName string, newName string, token string) (message string, status string, err error) {
 	request := UpdateTagRequest{
 		NewName: newName,
 		OldName: oldName,
+		Token:   token,
 	}
 	response, err := e.UpdateTagEndpoint(ctx, request)
 	if err != nil {
@@ -410,8 +432,11 @@ func (e Endpoints) UpdateTag(ctx context.Context, oldName string, newName string
 }
 
 // DeleteTag implements Service. Primarily useful in a client.
-func (e Endpoints) DeleteTag(ctx context.Context, name string) (message string, status string, err error) {
-	request := DeleteTagRequest{Name: name}
+func (e Endpoints) DeleteTag(ctx context.Context, name string, token string) (message string, status string, err error) {
+	request := DeleteTagRequest{
+		Name:  name,
+		Token: token,
+	}
 	response, err := e.DeleteTagEndpoint(ctx, request)
 	if err != nil {
 		return
@@ -420,12 +445,13 @@ func (e Endpoints) DeleteTag(ctx context.Context, name string) (message string, 
 }
 
 // Upload implements Service. Primarily useful in a client.
-func (e Endpoints) Upload(ctx context.Context, title string, description string, fileType string, file bytes.Buffer) (message string, status string, err error) {
+func (e Endpoints) Upload(ctx context.Context, title string, description string, fileType string, file bytes.Buffer, token string) (message string, status string, err error) {
 	request := UploadRequest{
 		Description: description,
 		File:        file,
 		FileType:    fileType,
 		Title:       title,
+		Token:       token,
 	}
 	response, err := e.UploadEndpoint(ctx, request)
 	if err != nil {

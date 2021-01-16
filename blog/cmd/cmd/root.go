@@ -2,18 +2,16 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-
-	"github.com/emadghaffari/virgool/blog/cmd/service"
 )
 
 var configFile = ""
 
 // rootCmd will run the log streamer
 var rootCmd = cobra.Command{
-	Use:  "virgool - blog",
+	Use:  "virgool",
 	Long: "A service that will validate restful transactions and send them to stripe.",
 	Run: func(cmd *cobra.Command, args []string) {
-		service.Run()
+		// service.Run()
 	},
 }
 

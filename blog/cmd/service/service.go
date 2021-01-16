@@ -11,14 +11,17 @@ import (
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
+	http1 "github.com/go-kit/kit/transport/http"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
 
+	"github.com/emadghaffari/virgool/blog/conf"
 	endpoint "github.com/emadghaffari/virgool/blog/pkg/endpoint"
 	grpc "github.com/emadghaffari/virgool/blog/pkg/grpc"
 	pb "github.com/emadghaffari/virgool/blog/pkg/grpc/pb"
+	pkghttp "github.com/emadghaffari/virgool/blog/pkg/http"
 	service "github.com/emadghaffari/virgool/blog/pkg/service"
 )
 
@@ -78,8 +81,19 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 
 }
 
+// initHttpHandler func
 func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
-
+	httpHandler := pkghttp.NewHTTPHandler(endpoints, map[string][]http1.ServerOption{})
+	httpListener, err := net.Listen("tcp", conf.GlobalConfigs.HTTP.Port)
+	if err != nil {
+		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
+	}
+	g.Add(func() error {
+		logger.Log("transport", "HTTP", "addr", conf.GlobalConfigs.HTTP.Port)
+		return http.Serve(httpListener, httpHandler)
+	}, func(error) {
+		httpListener.Close()
+	})
 }
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {

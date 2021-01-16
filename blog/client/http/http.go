@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	endpoint1 "github.com/emadghaffari/virgool/blog/pkg/endpoint"
-	http2 "github.com/emadghaffari/virgool/blog/pkg/http"
-	service "github.com/emadghaffari/virgool/blog/pkg/service"
-	endpoint "github.com/go-kit/kit/endpoint"
-	http "github.com/go-kit/kit/transport/http"
 	"io/ioutil"
 	http1 "net/http"
 	"net/url"
 	"strings"
+
+	endpoint "github.com/go-kit/kit/endpoint"
+	http "github.com/go-kit/kit/transport/http"
+
+	endpoint1 "github.com/emadghaffari/virgool/blog/pkg/endpoint"
+	http2 "github.com/emadghaffari/virgool/blog/pkg/http"
+	service "github.com/emadghaffari/virgool/blog/pkg/service"
 )
 
 // New returns an AddService backed by an HTTP server living at the remote

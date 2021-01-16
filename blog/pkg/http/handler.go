@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
-
 	endpoint "github.com/emadghaffari/virgool/blog/pkg/endpoint"
 	http1 "github.com/go-kit/kit/transport/http"
+	"net/http"
 )
 
 // makeCreatePostHandler creates the handler logic
