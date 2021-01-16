@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package pb;
+
+
+
+//The Blog service definition.
+service Blog {
+ rpc CreatePost (CreatePostRequest) returns (CreatePostReply);
+ rpc UpdatePost (UpdatePostRequest) returns (UpdatePostReply);
+ rpc GetPost    (GetPostRequest   ) returns (GetPostReply   );
+ rpc DeletePost (DeletePostRequest) returns (DeletePostReply);
+ rpc CreateTag  (CreateTagRequest ) returns (CreateTagReply );
+ rpc GetTag     (GetTagRequest    ) returns (GetTagReply    );
+ rpc UpdateTag  (UpdateTagRequest ) returns (UpdateTagReply );
+ rpc DeleteTag  (DeleteTagRequest ) returns (DeleteTagReply );
+ rpc Upload     (UploadRequest    ) returns (UploadReply    );
+}
+
+message CreatePostRequest {}
+
+message CreatePostReply {}
+
+message UpdatePostRequest {}
+
+message UpdatePostReply {}
+
+message GetPostRequest {}
+
+message GetPostReply {}
+
+message DeletePostRequest {}
+
+message DeletePostReply {}
+
+message CreateTagRequest {}
+
+message CreateTagReply {}
+
+message GetTagRequest {}
+
+message GetTagReply {}
+
+message UpdateTagRequest {}
+
+message UpdateTagReply {}
+
+message DeleteTagRequest {}
+
+message DeleteTagReply {}
+
+message UploadRequest {}
+
+message UploadReply {}
+
