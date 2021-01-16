@@ -1,22 +1,24 @@
 package model
 
 import (
-	"database/sql/driver"
 	"time"
 )
 
 // StatusPost string for posts status
 type StatusPost string
 
-// Scan the post status
-func (e *StatusPost) Scan(value interface{}) error {
-	*e = StatusPost(value.([]byte))
-	return nil
-}
-
-// Value return the post status
-func (e StatusPost) Value() (driver.Value, error) {
-	return string(e), nil
+// ScanStatus func
+func ScanStatus(value string) StatusPost {
+	switch value {
+	case "pending":
+		return Pending
+	case "published":
+		return Published
+	case "deleted":
+		return Deleted
+	default:
+		return Pending
+	}
 }
 
 // const for posts status types

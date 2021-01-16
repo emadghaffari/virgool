@@ -63,6 +63,8 @@ message GetPostRequest {
 message GetPostReply {
     string message = 1;
     string status  = 2;
+    repeated posts posts = 3;
+    
 }
 
 message DeletePostRequest {
@@ -93,6 +95,7 @@ message GetTagRequest {
 message GetTagReply {
     string message = 1;
     string status  = 2;
+    repeated string tags = 3;
 }
 
 message UpdateTagRequest {
@@ -132,4 +135,28 @@ message UploadReply {
 message Query {
  string key   = 1;
  string value = 2;
+}
+
+
+message posts {
+    string title = 1;
+    string slug = 2;
+    string description = 3;
+    string text = 4;
+    string status = 5;
+    repeated Query params = 6;
+    repeated Media medias = 7;
+    repeated Tag tags = 8;
+    string publishedAT = 9;
+}
+
+message Media {
+    string url = 1;
+    string type = 2;
+    string title = 3;
+    string description = 4;
+}
+
+message Tag {
+    string name = 1;
 }
