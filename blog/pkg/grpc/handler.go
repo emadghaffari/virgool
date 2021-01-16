@@ -155,7 +155,6 @@ func decodeGetPostRequest(_ context.Context, r interface{}) (interface{}, error)
 
 // encodeGetPostResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeGetPostResponse(_ context.Context, r interface{}) (interface{}, error) {
 	rs := r.(endpoint.GetPostResponse)
 
@@ -232,7 +231,6 @@ func decodeDeletePostRequest(_ context.Context, r interface{}) (interface{}, err
 
 // encodeDeletePostResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeDeletePostResponse(_ context.Context, r interface{}) (interface{}, error) {
 	rs := r.(endpoint.DeletePostResponse)
 
@@ -292,7 +290,6 @@ func makeGetTagHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption
 
 // decodeGetTagResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain GetTag request.
-// TODO implement the decoder
 func decodeGetTagRequest(_ context.Context, r interface{}) (interface{}, error) {
 	rq := r.(*pb.GetTagRequest)
 
@@ -309,7 +306,6 @@ func decodeGetTagRequest(_ context.Context, r interface{}) (interface{}, error) 
 
 // encodeGetTagResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeGetTagResponse(_ context.Context, r interface{}) (interface{}, error) {
 	rs := r.(endpoint.GetTagResponse)
 
@@ -334,7 +330,6 @@ func makeUpdateTagHandler(endpoints endpoint.Endpoints, options []grpc.ServerOpt
 
 // decodeUpdateTagResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain UpdateTag request.
-// TODO implement the decoder
 func decodeUpdateTagRequest(_ context.Context, r interface{}) (interface{}, error) {
 	rq := r.(*pb.UpdateTagRequest)
 
@@ -347,7 +342,6 @@ func decodeUpdateTagRequest(_ context.Context, r interface{}) (interface{}, erro
 
 // encodeUpdateTagResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeUpdateTagResponse(_ context.Context, r interface{}) (interface{}, error) {
 	rs := r.(endpoint.UpdateTagResponse)
 
@@ -372,7 +366,6 @@ func makeDeleteTagHandler(endpoints endpoint.Endpoints, options []grpc.ServerOpt
 
 // decodeDeleteTagResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain DeleteTag request.
-// TODO implement the decoder
 func decodeDeleteTagRequest(_ context.Context, r interface{}) (interface{}, error) {
 	rq := r.(*pb.DeleteTagRequest)
 
@@ -384,7 +377,6 @@ func decodeDeleteTagRequest(_ context.Context, r interface{}) (interface{}, erro
 
 // encodeDeleteTagResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeDeleteTagResponse(_ context.Context, r interface{}) (interface{}, error) {
 	rs := r.(endpoint.DeleteTagResponse)
 
@@ -409,7 +401,6 @@ func makeUploadHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption
 
 // decodeUploadResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain Upload request.
-// TODO implement the decoder
 func decodeUploadRequest(_ context.Context, r interface{}) (interface{}, error) {
 	rq := r.(*pb.UploadRequest)
 
@@ -424,7 +415,6 @@ func decodeUploadRequest(_ context.Context, r interface{}) (interface{}, error) 
 
 // encodeUploadResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeUploadResponse(_ context.Context, r interface{}) (interface{}, error) {
 	rs := r.(endpoint.UploadResponse)
 
