@@ -27,8 +27,24 @@ services:
       - db
       - vault
     ports:
-      - 8850:8081
-      - 8851:8082
+      - 8900:8081
+      - 8901:8082
+
+
+  # blog service
+  blog:
+    build:
+      context: .
+      dockerfile: blog/Dockerfile
+    restart: always
+    volumes:
+      - .:/go/src/github.com/emadghaffari/virgool
+    depends_on:
+      - db
+      - vault
+    ports:
+      - 9000:8081
+      - 9001:8082
 
   # database container
   db:
