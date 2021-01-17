@@ -1,0 +1,1 @@
+create DB virgool_blog
