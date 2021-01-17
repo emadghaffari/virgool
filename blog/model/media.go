@@ -4,8 +4,8 @@ import "time"
 
 // Media struct
 type Media struct {
-	id          uint64    `json:"-" gorm:"primaryKey"`
-	URL         string    `validate:"required" json:"url" gorm:"uniqueIndex"`
+	ID          uint64    `json:"-" gorm:"primaryKey"`
+	URL         string    `validate:"required" json:"url" gorm:"uniqueIndex;type:varchar(250);"`
 	Type        string    `validate:"required" json:"type"`
 	Title       *string   `validate:"required" json:"title"`
 	Description *string   `validate:"required" json:"description"`

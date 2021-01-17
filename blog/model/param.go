@@ -11,7 +11,7 @@ type Query struct {
 // Param struct
 type Param struct {
 	Query
-	id        uint64    `json:"-" gorm:"primaryKey"`
+	ID        uint64    `json:"-" gorm:"primaryKey"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }

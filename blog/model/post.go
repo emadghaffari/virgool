@@ -30,7 +30,7 @@ const (
 
 // Post struct
 type Post struct {
-	id          uint64     `json:"-" gorm:"primaryKey"`
+	ID          uint64     `json:"-" gorm:"primaryKey"`
 	UserID      uint64     `validate:"required" json:"user_id"`
 	Title       string     `validate:"required" json:"title" gorm:"unique;not null;type:varchar(180);"`
 	Slug        string     `validate:"required" json:"slug" gorm:"uniqueIndex;not null;type:varchar(250);"`
