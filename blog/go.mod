@@ -3,12 +3,13 @@ module github.com/emadghaffari/virgool/blog
 go 1.15
 
 require (
-	github.com/emadghaffari/seeder v0.0.0-20210107175858-711e177af488
+	github.com/emadghaffari/seeder v0.0.0-20210107175858-711e177af488 // indirect
 	github.com/go-kit/kit v0.10.0
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/golang/protobuf v1.4.3
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/uuid v1.1.5
+	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.8 // indirect
@@ -30,6 +31,8 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.1
+	github.com/uber/jaeger-client-go v2.25.0+incompatible
+	github.com/uber/jaeger-lib v2.4.0+incompatible
 	go.opentelemetry.io/otel v0.16.0 // indirect
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
