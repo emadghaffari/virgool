@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/emadghaffari/virgool/blog/cmd/service"
 )
 
 var configFile = ""
@@ -11,7 +13,7 @@ var rootCmd = cobra.Command{
 	Use:  "virgool",
 	Long: "A service that will validate restful transactions and send them to stripe.",
 	Run: func(cmd *cobra.Command, args []string) {
-		// service.Run()
+		service.Run()
 	},
 }
 
