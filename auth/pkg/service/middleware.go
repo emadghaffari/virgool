@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	log "github.com/go-kit/kit/log"
+	"github.com/sirupsen/logrus"
 
 	model "github.com/emadghaffari/virgool/auth/model"
 )
@@ -27,7 +28,10 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 func (l loggingMiddleware) Register(ctx context.Context, Username string, Password string, Name string, LastName string, Phone string, Email string) (Response model.User, err error) {
 	defer func() {
-		l.logger.Log("method", "Register", "Username", Username, "Password", Password, "Name", Name, "LastName", LastName, "Phone", Phone, "Email", Email, "Response", Response, "err", err)
+		er := l.logger.Log("method", "Register", "Username", Username, "Password", Password, "Name", Name, "LastName", LastName, "Phone", Phone, "Email", Email, "Response", Response, "err", err)
+		if err != nil {
+			logrus.Warn(er)
+		}
 	}()
 
 	err = model.Validator.Get().Struct(model.User{Username: Username, Password: &Password, Name: Name, LastName: LastName, Phone: Phone, Email: Email})
@@ -39,7 +43,10 @@ func (l loggingMiddleware) Register(ctx context.Context, Username string, Passwo
 }
 func (l loggingMiddleware) LoginUP(ctx context.Context, Username string, Password string) (Response model.User, err error) {
 	defer func() {
-		l.logger.Log("method", "LoginUP", "Username", Username, "Password", Password, "Response", Response, "err", err)
+		er := l.logger.Log("method", "LoginUP", "Username", Username, "Password", Password, "Response", Response, "err", err)
+		if err != nil {
+			logrus.Warn(er)
+		}
 	}()
 
 	if err := model.Validator.Get().Var(Password, "required,gte=7"); err != nil {
@@ -61,7 +68,10 @@ func (l loggingMiddleware) LoginP(ctx context.Context, Phone string) (Response m
 }
 func (l loggingMiddleware) Verify(ctx context.Context, Token string, Type string, Code string) (Response model.User, err error) {
 	defer func() {
-		l.logger.Log("method", "Verify", "Token", Token, "Type", Type, "Code", Code, "Response", Response, "err", err)
+		er := l.logger.Log("method", "Verify", "Token", Token, "Type", Type, "Code", Code, "Response", Response, "err", err)
+		if err != nil {
+			logrus.Warn(er)
+		}
 	}()
 
 	if err := model.Validator.Get().Var(Token, "required"); err != nil {
