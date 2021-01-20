@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 
+	"github.com/opentracing/opentracing-go"
+
+	"github.com/emadghaffari/virgool/blog/database/mysql"
 	"github.com/emadghaffari/virgool/blog/model"
 )
 
@@ -29,7 +32,13 @@ type BlogService interface {
 type basicBlogService struct{}
 
 func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
-	// TODO implement the business logic of CreatePost
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("create-post")
+	defer span.Finish()
+
+	// begins a transaction
+	tx := mysql.Database.GetDatabase().Begin()
+
 	return message, status, err
 }
 func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
