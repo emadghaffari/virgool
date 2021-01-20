@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"fmt"
 
 	"github.com/opentracing/opentracing-go"
 
@@ -13,8 +14,8 @@ import (
 // BlogService describes the service.
 type BlogService interface {
 	// CRUD Posts
-	CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error)
-	UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error)
+	CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error)
+	UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error)
 	GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error)
 	DeletePost(ctx context.Context, filter []*model.Query, token string) (message string, status string, err error)
 
@@ -31,17 +32,57 @@ type BlogService interface {
 
 type basicBlogService struct{}
 
-func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
+func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("create-post")
 	defer span.Finish()
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
+	p := make([]*model.Param, len(params))
+	for kp, vp := range params {
+		p[kp] = &model.Param{
+			Query: model.Query{Name: vp.Name, Value: vp.Value},
+		}
+	}
+	m := make([]*model.Media, len(medias))
+	for km, vm := range medias {
+		m[km] = &model.Media{
+			ID: vm,
+		}
+	}
 
-	return message, status, err
+	t := make([]*model.Tag, len(Tags))
+	for kt, vt := range Tags {
+		m[kt] = &model.Media{
+			ID: vt,
+		}
+	}
+
+	// blog model
+	post := model.Post{
+		UserID:      userID,
+		Title:       title,
+		Slug:        slug,
+		Description: description,
+		Text:        text,
+		Params:      p,
+		Media:       m,
+		Tags:        t,
+		Status:      Status,
+	}
+
+	// try to store post with model
+	if gm := tx.Create(&post); gm.Error != nil {
+		tx.Rollback()
+		return message, "ERROR", fmt.Errorf(err.Error())
+	}
+
+	tx.Commit()
+
+	return "SUCCESS", "SUCCESS", err
 }
-func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
+func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	// TODO implement the business logic of UpdatePost
 	return message, status, err
 }

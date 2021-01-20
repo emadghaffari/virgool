@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"context"
 
-	model "github.com/emadghaffari/virgool/blog/model"
 	log "github.com/go-kit/kit/log"
+
+	model "github.com/emadghaffari/virgool/blog/model"
 )
 
 // Middleware describes a service middleware.
@@ -25,13 +26,13 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 }
 
-func (l loggingMiddleware) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
+func (l loggingMiddleware) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	defer func() {
 		l.logger.Log("method", "CreatePost", "userID", userID, "title", title, "slug", slug, "description", description, "text", text, "params", params, "medias", medias, "Tags", Tags, "Status", Status, "token", token, "message", message, "status", status, "err", err)
 	}()
 	return l.next.CreatePost(ctx, userID, title, slug, description, text, params, medias, Tags, Status, token)
 }
-func (l loggingMiddleware) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
+func (l loggingMiddleware) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	defer func() {
 		l.logger.Log("method", "UpdatePost", "title", title, "slug", slug, "description", description, "text", text, "params", params, "medias", medias, "Tags", Tags, "Status", Status, "token", token, "message", message, "status", status, "err", err)
 	}()
