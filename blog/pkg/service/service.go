@@ -40,25 +40,6 @@ func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title 
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
-	// p := make([]*model.Param, len(params))
-	// for kp, vp := range params {
-	// 	p[kp] = &model.Param{
-	// 		Query: model.Query{Name: vp.Name, Value: vp.Value},
-	// 	}
-	// }
-	// m := make([]*model.Media, len(medias))
-	// for km, vm := range medias {
-	// 	m[km] = &model.Media{
-	// 		ID: vm,
-	// 	}
-	// }
-
-	t := make([]*model.Tag, len(Tags))
-	for kt, vt := range Tags {
-		t[kt] = &model.Tag{
-			ID: vt,
-		}
-	}
 
 	// blog model
 	post := model.Post{
@@ -77,7 +58,39 @@ func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title 
 		return message, "ERROR", fmt.Errorf(err.Error())
 	}
 
-	tx.Model(post).Association("tags").Append(Tags)
+	t := make([]*model.Tag, len(Tags))
+	for kt, vt := range Tags {
+		t[kt] = &model.Tag{
+			ID: vt,
+		}
+	}
+	if err := tx.Model(&post).Association("Tags").Append(t); err != nil {
+		tx.Rollback()
+		return message, "ERROR", fmt.Errorf(err.Error())
+	}
+
+	p := make([]*model.Param, len(params))
+	for kp, vp := range params {
+		p[kp] = &model.Param{
+			Query: model.Query{Name: vp.Name, Value: vp.Value},
+		}
+	}
+	if err := tx.Model(&post).Association("Params").Append(p); err != nil {
+		tx.Rollback()
+		return message, "ERROR", fmt.Errorf(err.Error())
+	}
+
+	m := make([]*model.Media, len(medias))
+	for km, vm := range medias {
+		m[km] = &model.Media{
+			ID: vm,
+		}
+	}
+	if err := tx.Model(&post).Association("Media").Append(m); err != nil {
+		tx.Rollback()
+		return message, "ERROR", fmt.Errorf(err.Error())
+	}
+
 	tx.Commit()
 
 	return "SUCCESS", "SUCCESS", err
