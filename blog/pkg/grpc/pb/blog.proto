@@ -25,8 +25,8 @@ message CreatePostRequest {
     string text = 5;
     string status = 6;
     repeated Query params = 7;
-    repeated int64 medias = 8;
-    repeated int64 Tags = 9;
+    repeated uint64 medias = 8;
+    repeated uint64 Tags = 9;
     string token = 10;
 }
 
@@ -42,8 +42,8 @@ message UpdatePostRequest {
     string text = 4;
     string status = 5;
     repeated Query params = 6;
-    repeated int64 medias = 7;
-    repeated int64 Tags = 8;
+    repeated uint64 medias = 7;
+    repeated uint64 Tags = 8;
     string token = 9;
 }
 

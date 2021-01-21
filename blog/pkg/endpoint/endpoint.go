@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"context"
 
+	endpoint "github.com/go-kit/kit/endpoint"
+
 	model "github.com/emadghaffari/virgool/blog/model"
 	service "github.com/emadghaffari/virgool/blog/pkg/service"
-	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 // CreatePostRequest collects the request parameters for the CreatePost method.
@@ -17,8 +18,8 @@ type CreatePostRequest struct {
 	Description string           `json:"description"`
 	Text        string           `json:"text"`
 	Params      []*model.Query   `json:"params"`
-	Medias      []int64          `json:"medias"`
-	Tags        []int64          `json:"tags"`
+	Medias      []uint64         `json:"medias"`
+	Tags        []uint64         `json:"tags"`
 	Status      model.StatusPost `json:"status"`
 	Token       string           `json:"token"`
 }
@@ -55,8 +56,8 @@ type UpdatePostRequest struct {
 	Description string           `json:"description"`
 	Text        string           `json:"text"`
 	Params      []*model.Query   `json:"params"`
-	Medias      []int64          `json:"medias"`
-	Tags        []int64          `json:"tags"`
+	Medias      []uint64         `json:"medias"`
+	Tags        []uint64         `json:"tags"`
 	Status      model.StatusPost `json:"status"`
 	Token       string           `json:"token"`
 }
@@ -322,7 +323,7 @@ type Failure interface {
 }
 
 // CreatePost implements Service. Primarily useful in a client.
-func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
+func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	request := CreatePostRequest{
 		Description: description,
 		Medias:      medias,
@@ -343,7 +344,7 @@ func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, 
 }
 
 // UpdatePost implements Service. Primarily useful in a client.
-func (e Endpoints) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []int64, Tags []int64, Status model.StatusPost, token string) (message string, status string, err error) {
+func (e Endpoints) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	request := UpdatePostRequest{
 		Description: description,
 		Medias:      medias,
