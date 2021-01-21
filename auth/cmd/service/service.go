@@ -167,6 +167,7 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 	// 	Subsystem: "auth",
 	// }, []string{"method", "success"})
 	// addDefaultEndpointMiddleware(logger, duration, mw)
+	addEndpointMiddlewareToAllMethods(mw, endpoint.LoggingMiddleware(logger))
 	// Add you endpoint middleware here
 
 	return

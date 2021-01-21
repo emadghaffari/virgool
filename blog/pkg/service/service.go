@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
 
@@ -39,22 +40,22 @@ func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title 
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
-	p := make([]*model.Param, len(params))
-	for kp, vp := range params {
-		p[kp] = &model.Param{
-			Query: model.Query{Name: vp.Name, Value: vp.Value},
-		}
-	}
-	m := make([]*model.Media, len(medias))
-	for km, vm := range medias {
-		m[km] = &model.Media{
-			ID: vm,
-		}
-	}
+	// p := make([]*model.Param, len(params))
+	// for kp, vp := range params {
+	// 	p[kp] = &model.Param{
+	// 		Query: model.Query{Name: vp.Name, Value: vp.Value},
+	// 	}
+	// }
+	// m := make([]*model.Media, len(medias))
+	// for km, vm := range medias {
+	// 	m[km] = &model.Media{
+	// 		ID: vm,
+	// 	}
+	// }
 
 	t := make([]*model.Tag, len(Tags))
 	for kt, vt := range Tags {
-		m[kt] = &model.Media{
+		t[kt] = &model.Tag{
 			ID: vt,
 		}
 	}
@@ -66,18 +67,17 @@ func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title 
 		Slug:        slug,
 		Description: description,
 		Text:        text,
-		Params:      p,
-		Media:       m,
-		Tags:        t,
 		Status:      Status,
+		PublishedAT: time.Now(),
 	}
 
 	// try to store post with model
-	if gm := tx.Create(&post); gm.Error != nil {
+	if gm := tx.Save(&post); gm.Error != nil {
 		tx.Rollback()
 		return message, "ERROR", fmt.Errorf(err.Error())
 	}
 
+	tx.Model(post).Association("tags").Append(Tags)
 	tx.Commit()
 
 	return "SUCCESS", "SUCCESS", err
