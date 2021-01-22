@@ -12,7 +12,6 @@ import (
 
 // CreatePostRequest collects the request parameters for the CreatePost method.
 type CreatePostRequest struct {
-	UserID      uint64           `json:"user_id"`
 	Title       string           `json:"title"`
 	Slug        string           `json:"slug"`
 	Description string           `json:"description"`
@@ -35,7 +34,7 @@ type CreatePostResponse struct {
 func MakeCreatePostEndpoint(s service.BlogService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreatePostRequest)
-		message, status, err := s.CreatePost(ctx, req.UserID, req.Title, req.Slug, req.Description, req.Text, req.Params, req.Medias, req.Tags, req.Status, req.Token)
+		message, status, err := s.CreatePost(ctx, req.Title, req.Slug, req.Description, req.Text, req.Params, req.Medias, req.Tags, req.Status, req.Token)
 		return CreatePostResponse{
 			Err:     err,
 			Message: message,
@@ -323,7 +322,7 @@ type Failure interface {
 }
 
 // CreatePost implements Service. Primarily useful in a client.
-func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
+func (e Endpoints) CreatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	request := CreatePostRequest{
 		Description: description,
 		Medias:      medias,
@@ -334,7 +333,6 @@ func (e Endpoints) CreatePost(ctx context.Context, userID uint64, title string, 
 		Text:        text,
 		Title:       title,
 		Token:       token,
-		UserID:      userID,
 	}
 	response, err := e.CreatePostEndpoint(ctx, request)
 	if err != nil {

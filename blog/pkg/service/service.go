@@ -15,7 +15,7 @@ import (
 // BlogService describes the service.
 type BlogService interface {
 	// CRUD Posts
-	CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error)
+	CreatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error)
 	UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error)
 	GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error)
 	DeletePost(ctx context.Context, filter []*model.Query, token string) (message string, status string, err error)
@@ -33,17 +33,19 @@ type BlogService interface {
 
 type basicBlogService struct{}
 
-func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
+func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("create-post")
 	defer span.Finish()
+
+	user := ctx.Value(model.User).(map[string]interface{})
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
 
 	// blog model
 	post := model.Post{
-		UserID:      userID,
+		UserID:      uint64(user["id"].(float64)),
 		Title:       title,
 		Slug:        slug,
 		Description: description,
@@ -93,7 +95,7 @@ func (b *basicBlogService) CreatePost(ctx context.Context, userID uint64, title 
 
 	tx.Commit()
 
-	return "SUCCESS", "SUCCESS", err
+	return "post created successfully", "SUCCESS", err
 }
 func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	// TODO implement the business logic of UpdatePost
