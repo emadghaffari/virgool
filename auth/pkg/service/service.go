@@ -169,7 +169,7 @@ func (b *basicAuthService) LoginP(ctx context.Context, Phone string) (Response m
 	// check phone number for sended code before {DB: Redis - Time: 2min}
 	var dst string
 	if err := redis.Database.Get(context.Background(), Phone, &dst); err == nil && dst == "NOTIFICATION" {
-		span.SetTag("Error", err.Error())
+		span.SetTag("Error", fmt.Sprintf("SMS SENDED BEFORE FOR USER: {%s}",Phone))
 		return model.User{}, fmt.Errorf("We have sent you an SMS. Please check your number {%s}", Phone)
 	}
 
