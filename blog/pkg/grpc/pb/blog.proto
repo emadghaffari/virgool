@@ -18,16 +18,15 @@ service Blog {
 }
 
 message CreatePostRequest {
-    uint64 userID = 1;
-    string title = 2;
-    string slug = 3;
-    string description = 4;
-    string text = 5;
-    string status = 6;
-    repeated Query params = 7;
-    repeated uint64 medias = 8;
-    repeated uint64 Tags = 9;
-    string token = 10;
+    string title = 1;
+    string slug = 2;
+    string description = 3;
+    string text = 4;
+    string status = 5;
+    repeated Query params = 6;
+    repeated uint64 medias = 7;
+    repeated uint64 Tags = 8;
+    string token = 9;
 }
 
 message CreatePostReply {

@@ -28,7 +28,6 @@ func decodeCreatePostRequest(_ context.Context, r interface{}) (interface{}, err
 	}
 
 	return endpoint.CreatePostRequest{
-		UserID:      rq.UserID,
 		Title:       rq.Title,
 		Slug:        rq.Slug,
 		Description: rq.Description,
