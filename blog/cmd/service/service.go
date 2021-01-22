@@ -145,8 +145,9 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
-	// mw = addDefaultServiceMiddleware(logger, mw)
+	mw = append(mw, service.LoggingMiddleware(logger))
 	// Append your middleware here
+	
 
 	return
 }
@@ -158,7 +159,7 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 	// 	Namespace: "example",
 	// 	Subsystem: "blog",
 	// }, []string{"method", "success"})
-	// addDefaultEndpointMiddleware(logger, duration, mw)
+	addEndpointMiddlewareToAllMethods(mw,endpoint.LoggingMiddleware(logger))
 	// Add you endpoint middleware here
 
 	return
