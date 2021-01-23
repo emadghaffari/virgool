@@ -147,7 +147,6 @@ func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
 	mw = append(mw, service.LoggingMiddleware(logger))
 	// Append your middleware here
-	
 
 	return
 }
@@ -159,7 +158,7 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 	// 	Namespace: "example",
 	// 	Subsystem: "blog",
 	// }, []string{"method", "success"})
-	addEndpointMiddlewareToAllMethods(mw,endpoint.LoggingMiddleware(logger))
+	addEndpointMiddlewareToAllMethods(mw, endpoint.LoggingMiddleware(logger))
 	// Add you endpoint middleware here
 
 	return
