@@ -32,18 +32,25 @@ func (l loggingMiddleware) CreatePost(ctx context.Context, title string, slug st
 	}()
 
 	var user interface{}
-	if err := model.JWT.Get(ctx,token,&user); err != nil {
-		l.logger.Log("user","not","found")
-		return "user not found","ERROR",err
+	if err := model.JWT.Get(ctx, token, &user); err != nil {
+		l.logger.Log("user", "not", "found")
+		return "user not found", "ERROR", err
 	}
 
-	return l.next.CreatePost(context.WithValue(ctx,model.User,user), title, slug, description, text, params, medias, Tags, Status, token)
+	return l.next.CreatePost(context.WithValue(ctx, model.User, user), title, slug, description, text, params, medias, Tags, Status, token)
 }
 func (l loggingMiddleware) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	defer func() {
 		l.logger.Log("method", "UpdatePost", "title", title, "slug", slug, "description", description, "text", text, "params", params, "medias", medias, "Tags", Tags, "Status", Status, "token", token, "message", message, "status", status, "err", err)
 	}()
-	return l.next.UpdatePost(ctx, title, slug, description, text, params, medias, Tags, Status, token)
+
+	var user interface{}
+	if err := model.JWT.Get(ctx, token, &user); err != nil {
+		l.logger.Log("user", "not", "found")
+		return "user not found", "ERROR", err
+	}
+
+	return l.next.UpdatePost(context.WithValue(ctx, model.User, user), title, slug, description, text, params, medias, Tags, Status, token)
 }
 func (l loggingMiddleware) GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error) {
 	defer func() {
