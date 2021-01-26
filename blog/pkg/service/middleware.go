@@ -3,6 +3,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"strings"
 
 	log "github.com/go-kit/kit/log"
 
@@ -38,10 +39,15 @@ func (l loggingMiddleware) CreatePost(ctx context.Context, title string, slug st
 		return "user not found", "ERROR", err
 	}
 
+	if slug == ""{
+		slug = title
+	}
+
 	slug,err = str.RemoveSymbols(slug)
 	if err != nil{
 		return "invalid slug", "ERROR", err
 	}
+	slug = strings.ReplaceAll(slug," ","-")
 
 	return l.next.CreatePost(context.WithValue(ctx, model.User, user), title, slug, description, text, params, medias, Tags, Status, token)
 }
@@ -56,10 +62,15 @@ func (l loggingMiddleware) UpdatePost(ctx context.Context, title string, slug st
 		return "user not found", "ERROR", err
 	}
 
+	if slug == ""{
+		slug = title
+	}
+
 	slug,err = str.RemoveSymbols(slug)
 	if err != nil{
 		return "invalid slug", "ERROR", err
 	}
+	slug = strings.ReplaceAll(slug," ","-")
 
 	return l.next.UpdatePost(context.WithValue(ctx, model.User, user), title, slug, description, text, params, medias, Tags, Status, token)
 }
