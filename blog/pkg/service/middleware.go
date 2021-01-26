@@ -7,6 +7,7 @@ import (
 	log "github.com/go-kit/kit/log"
 
 	model "github.com/emadghaffari/virgool/blog/model"
+	"github.com/emadghaffari/virgool/blog/utils/str"
 )
 
 // Middleware describes a service middleware.
@@ -37,6 +38,11 @@ func (l loggingMiddleware) CreatePost(ctx context.Context, title string, slug st
 		return "user not found", "ERROR", err
 	}
 
+	slug,err = str.RemoveSymbols(slug)
+	if err != nil{
+		return "invalid slug", "ERROR", err
+	}
+
 	return l.next.CreatePost(context.WithValue(ctx, model.User, user), title, slug, description, text, params, medias, Tags, Status, token)
 }
 func (l loggingMiddleware) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
@@ -48,6 +54,11 @@ func (l loggingMiddleware) UpdatePost(ctx context.Context, title string, slug st
 	if err := model.JWT.Get(ctx, token, &user); err != nil {
 		l.logger.Log("user", "not", "found")
 		return "user not found", "ERROR", err
+	}
+
+	slug,err = str.RemoveSymbols(slug)
+	if err != nil{
+		return "invalid slug", "ERROR", err
 	}
 
 	return l.next.UpdatePost(context.WithValue(ctx, model.User, user), title, slug, description, text, params, medias, Tags, Status, token)
