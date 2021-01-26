@@ -8,12 +8,10 @@ var (
 	// Validator var
 	Validator validate = &valid{}
 )
-
 type validate interface {
 	New()
 	Get() *validator.Validate
 }
-
 type valid struct {
 	validate *validator.Validate
 }
