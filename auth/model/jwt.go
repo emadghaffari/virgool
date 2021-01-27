@@ -30,6 +30,7 @@ type jwt struct {
 	RtExpires    int64  `json:"rexp"`
 }
 
+// jwt meths interface
 type intef interface {
 	Generate(ctx context.Context, model interface{}) (*jwt, error)
 	genJWT() (*jwt, error)
@@ -40,6 +41,7 @@ type intef interface {
 }
 type wt struct{}
 
+// Generate new jwt token and store into redis DB
 func (j *wt) Generate(ctx context.Context, model interface{}) (*jwt, error) {
 
 	td, err := j.genJWT()
@@ -58,6 +60,7 @@ func (j *wt) Generate(ctx context.Context, model interface{}) (*jwt, error) {
 	return td, nil
 }
 
+// generate JWT tokens
 func (j *wt) genJWT() (*jwt, error) {
 	// create new jwt
 	td := &jwt{}
@@ -81,6 +84,7 @@ func (j *wt) genJWT() (*jwt, error) {
 	return td, nil
 }
 
+// generate refresh tokens
 func (j *wt) genRefJWT(td *jwt) error {
 	// New MapClaims for refresh access token
 	rtClaims := jjwt.MapClaims{}
@@ -96,6 +100,7 @@ func (j *wt) genRefJWT(td *jwt) error {
 	return nil
 }
 
+// store into DB
 func (j *wt) store(ctx context.Context, model interface{}, td *jwt) error {
 	bt, err := json.Marshal(model)
 	if err != nil {
@@ -115,6 +120,7 @@ func (j *wt) store(ctx context.Context, model interface{}, td *jwt) error {
 	return nil
 }
 
+// Get jwt token from redis
 func (j *wt) Get(ctx context.Context, token string, response interface{}) error {
 	if err := redis.Database.Get(ctx, token, &response); err != nil {
 		return err
@@ -122,6 +128,7 @@ func (j *wt) Get(ctx context.Context, token string, response interface{}) error 
 	return nil
 }
 
+// Verify a token
 func (j *wt) Verify(tk string) (string, error) {
 	strArr := strings.Split(tk, " ")
 	if len(strArr) != 2 {
