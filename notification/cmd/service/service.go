@@ -74,6 +74,22 @@ func Run() {
 		return
 	}
 
+	// initStream to kafka
+	client, err := initStream()
+	if err != nil {
+		logger.Log("exit")
+		return
+	}
+
+	defer func() {
+		if err := client.Close(); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"error": fmt.Sprintf("Error in Consumer: %s", err),
+			}).Fatal(fmt.Sprintf("Error in Consumer: %s", err))
+			return
+		}
+	}()
+
 	// validate
 	model.Validator.New()
 
@@ -101,21 +117,7 @@ func Run() {
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
 
-	// initStream to kafka
-	client, err := initStream()
-	if err != nil {
-		logger.Log("exit")
-		return
-	}
-
-	defer func() {
-		if err := client.Close(); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": fmt.Sprintf("Error in Consumer: %s", err),
-			}).Fatal(fmt.Sprintf("Error in Consumer: %s", err))
-			return
-		}
-	}()
+	
 
 	logger.Log("exit", g.Run())
 
@@ -268,6 +270,7 @@ func initKafka() error {
 }
 
 func initStream() (sarama.Consumer, error) {
+
 	client, err := kafka.Database.Consumer(context.Background(), conf.GlobalConfigs.Kafka.Brokers, conf.GlobalConfigs.Kafka.Topics.Notif)
 	if err != nil {
 		return nil, err

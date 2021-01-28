@@ -89,7 +89,7 @@ func (k *Client) Connect(conf *conf.GlobalConfiguration) error {
 
 // Consumer meth
 func (k *Client) Consumer(ctx context.Context, brokers []string, topic string) (sarama.Consumer, error) {
-	client, err := sarama.NewConsumer(brokers, k.Config)
+	master, err := sarama.NewConsumer(brokers, k.Config)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"error": fmt.Sprintf("Error in newConsumer: %s", err),
@@ -100,19 +100,19 @@ func (k *Client) Consumer(ctx context.Context, brokers []string, topic string) (
 	consumers := make(chan *sarama.ConsumerMessage)
 	errors := make(chan *sarama.ConsumerError)
 
-	partitions, err := client.Partitions(topic)
+	partitions, err := master.Partitions(topic)
 	if err != nil {
 		logrus.Warn(err)
 		return nil, err
 	}
 
-	consumer, err := client.ConsumePartition(topic, partitions[0], sarama.OffsetNewest)
+	consumer, err := master.ConsumePartition(topic, partitions[0], sarama.OffsetNewest)
 	if err != nil {
 		logrus.Warn(err)
 		return nil, err
 	}
 
-	go func(topic string, consumer sarama.PartitionConsumer) {
+	go func(consumer sarama.PartitionConsumer) {
 		for {
 			select {
 			case consumerError := <-consumer.Errors():
@@ -122,14 +122,14 @@ func (k *Client) Consumer(ctx context.Context, brokers []string, topic string) (
 				consumers <- msg
 			}
 		}
-	}(topic, consumer)
+	}(consumer)
 
-	go func() {
+	go func(chs chan *sarama.ConsumerMessage) {
 		for {
-			time.Sleep(time.Second)
 			select {
-			case msg := <-consumers:
+			case msg := <-chs:
 				id := fmt.Sprintf("%v-%d-%d", msg.Topic, msg.Partition, msg.Offset)
+			
 
 				var item notif.Notification
 				if err := json.Unmarshal(msg.Value, &item); err != nil {
@@ -137,6 +137,15 @@ func (k *Client) Consumer(ctx context.Context, brokers []string, topic string) (
 						"error": fmt.Sprintf("cannot unmarshal data from kafka Error: %s - id: %s", err, id),
 					}).Fatal(fmt.Sprintf("cannot unmarshal data from kafka Error: %s - id: %s", err, id))
 				}
+
+
+				fmt.Println("/////////////")
+				fmt.Println("/////////////")
+				fmt.Println(item)
+				fmt.Println(conf.GlobalConfigs.Kafka.Brokers, conf.GlobalConfigs.Kafka.Topics.Notif)
+				fmt.Println("/////////////")
+				fmt.Println("/////////////")
+
 
 				service.Streamer.Store(context.Background(), k.Count, item)
 				k.Count++
@@ -148,7 +157,7 @@ func (k *Client) Consumer(ctx context.Context, brokers []string, topic string) (
 				logrus.Warn(string(consumerError.Topic), string(consumerError.Partition), consumerError.Err)
 			}
 		}
-	}()
+	}(consumers)
 
-	return client, nil
+	return master, nil
 }
