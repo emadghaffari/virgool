@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -19,6 +20,7 @@ import (
 	group "github.com/oklog/oklog/pkg/group"
 	"github.com/opentracing/opentracing-go"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
@@ -28,10 +30,11 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/emadghaffari/virgool/notification/conf"
-	"github.com/emadghaffari/virgool/notification/database/kafka"
+	kf "github.com/emadghaffari/virgool/notification/database/kafka"
 	"github.com/emadghaffari/virgool/notification/database/redis"
 	"github.com/emadghaffari/virgool/notification/env"
 	"github.com/emadghaffari/virgool/notification/model"
+	"github.com/emadghaffari/virgool/notification/model/notif"
 	endpoint "github.com/emadghaffari/virgool/notification/pkg/endpoint"
 	grpc "github.com/emadghaffari/virgool/notification/pkg/grpc"
 	pb "github.com/emadghaffari/virgool/notification/pkg/grpc/pb"
@@ -49,7 +52,6 @@ var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
 var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
 var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
 var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
-
 // Run func
 func Run() {
 
@@ -74,21 +76,24 @@ func Run() {
 		return
 	}
 
-	// initStream to kafka
-	client, err := initStream()
-	if err != nil {
-		logger.Log("exit")
-		return
-	}
+	go streamNotifications()
 
-	defer func() {
-		if err := client.Close(); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"error": fmt.Sprintf("Error in Consumer: %s", err),
-			}).Fatal(fmt.Sprintf("Error in Consumer: %s", err))
-			return
-		}
-	}()
+
+	// // initStream to kafka
+	// client, err := initStream()
+	// if err != nil {
+	// 	logger.Log("exit")
+	// 	return
+	// }
+
+	// defer func() {
+	// 	if err := client.Close(); err != nil {
+	// 		logrus.WithFields(logrus.Fields{
+	// 			"error": fmt.Sprintf("Error in Consumer: %s", err),
+	// 		}).Fatal(fmt.Sprintf("Error in Consumer: %s", err))
+	// 		return
+	// 	}
+	// }()
 
 	// validate
 	model.Validator.New()
@@ -266,15 +271,37 @@ func initRedis() error {
 	return redis.Database.Connect(&conf.GlobalConfigs)
 }
 func initKafka() error {
-	return kafka.Database.Connect(&conf.GlobalConfigs)
+	return kf.Database.Connect(&conf.GlobalConfigs)
 }
 
 func initStream() (sarama.Consumer, error) {
 
-	client, err := kafka.Database.Consumer(context.Background(), conf.GlobalConfigs.Kafka.Brokers, conf.GlobalConfigs.Kafka.Topics.Notif)
-	if err != nil {
-		return nil, err
-	}
+	// client, err := kf.Database.Consumer(context.Background(), conf.GlobalConfigs.Kafka.Brokers, conf.GlobalConfigs.Kafka.Topics.Notif)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return client, nil
+	return nil, nil
+}
+
+func streamNotifications()  {
+	var count = conf.GlobalConfigs.Service.MinCL
+	reader,err := kf.Database.NewReader(conf.GlobalConfigs.Kafka.Group,conf.GlobalConfigs.Kafka.Topics.Notif,0)
+	if err != nil {
+		logger.Log("during", "create", "new", "reader", "err", err)
+	}
+	kf.Database.Consumer(context.Background(),reader,func(m kafka.Message) {
+		var item notif.Notification
+		if err := json.Unmarshal(m.Value, &item); err != nil {
+			id := fmt.Sprintf("%v-%d-%d", m.Topic, m.Partition, m.Offset)
+			logrus.WithFields(logrus.Fields{
+				"error": fmt.Sprintf("cannot unmarshal data from kafka Error: %s - id: %s", err, id),
+			}).Fatal(fmt.Sprintf("cannot unmarshal data from kafka Error: %s - id: %s", err, id))
+		}
+		service.Streamer.Store(context.Background(), count, item)
+		if count == conf.GlobalConfigs.Service.MaxCl {
+			count = conf.GlobalConfigs.Service.MinCL
+		}
+		count++
+	})
 }
