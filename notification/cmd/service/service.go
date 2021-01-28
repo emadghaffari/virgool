@@ -76,24 +76,8 @@ func Run() {
 		return
 	}
 
+	// stream notifs from default kafka topic
 	go streamNotifications()
-
-
-	// // initStream to kafka
-	// client, err := initStream()
-	// if err != nil {
-	// 	logger.Log("exit")
-	// 	return
-	// }
-
-	// defer func() {
-	// 	if err := client.Close(); err != nil {
-	// 		logrus.WithFields(logrus.Fields{
-	// 			"error": fmt.Sprintf("Error in Consumer: %s", err),
-	// 		}).Fatal(fmt.Sprintf("Error in Consumer: %s", err))
-	// 		return
-	// 	}
-	// }()
 
 	// validate
 	model.Validator.New()
