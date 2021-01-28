@@ -3,3 +3,4 @@ auth
 vendor/
 logs/*
 env/.README.md
+tmp

@@ -212,7 +212,7 @@ func initConfigs() error {
 		logrus.Warn(err.Error())
 	}
 	// read from file
-	return env.LoadGlobalConfiguration(dir + "/auth/config.yaml")
+	return env.LoadGlobalConfiguration(dir + "/config.yaml")
 }
 
 func initJaeger() (io.Closer, error) {

@@ -34,7 +34,7 @@ func seed(cmd *cobra.Command, args []string) {
 	}
 
 	// read from file
-	if err := env.LoadGlobalConfiguration(dir + "/blog/config.yaml"); err != nil {
+	if err := env.LoadGlobalConfiguration(dir + "/config.yaml"); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(2)
 	}
