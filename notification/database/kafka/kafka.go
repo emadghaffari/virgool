@@ -2,6 +2,7 @@ package kf
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 
@@ -20,29 +21,31 @@ var (
 
 // kf interface
 type kf interface {
-	// Connect(conf *conf.GlobalConfiguration) error
-	// Consumer(ctx context.Context, brokers []string, topic string) (sarama.Consumer, error)
-	Connect(conf *conf.GlobalConfiguration) error
+	Connect(ctx context.Context,conf *conf.GlobalConfiguration,topic string,partition int) error
 	Consumer(ctx context.Context, reader *kafka.Reader, action func(kafka.Message))
 	NewReader(groupID,topic string, partition int) (*kafka.Reader,error)
+	TopicList() (map[string]struct{},error)
 }
 
 // Client struct
 type Client struct {
-	Config   *sarama.Config
+	Config   *kafka.Conn
 	Messages chan *sarama.ConsumerMessage
 	Errors   chan *sarama.ConsumerError
 	ready    chan bool
 	Count    int
 }
 
-func (k *Client) Connect(conf *conf.GlobalConfiguration) error {
+// Connect is basic connection to kafka
+func (k *Client) Connect(ctx context.Context,conf *conf.GlobalConfiguration,topic string,partition int) error {
 	once.Do(func() {
-		// make a new reader that consumes from topic-A, partition 0, at offset 42
-		
+		k.Config, err = kafka.DialLeader(ctx, "tcp", conf.Kafka.Brokers[0], topic, partition)
+		if err != nil {
+			log.Fatal("failed to dial leader:", err)
+		}
 	})
 	
-	return nil
+	return err
 }
 
 // NewReader func
@@ -78,127 +81,20 @@ func (k *Client) Consumer(ctx context.Context, reader *kafka.Reader, action func
 	}
 }
 
-// // Connect to kafka
-// func (k *Client) Connect(conf *conf.GlobalConfiguration) error {
-// 	if err := k.validate(conf); err != nil {
-// 		logrus.WithFields(logrus.Fields{
-// 			"error": fmt.Sprintf("Error in GlobalConfig: %s", err),
-// 		}).Fatal(fmt.Sprintf("Error in GlobalConfig: %s", err))
-// 		return err
-// 	}
+// TopicList get the list of topics for a broker
+func (k *Client) TopicList() (map[string]struct{},error) {
+	if k.Config == nil {
+		return nil,fmt.Errorf("Error in get Config")
+	}
+	partitions, err := k.Config.ReadPartitions()
+	if err != nil {
+		panic(err.Error())
+	}
 
-// 	once.Do(func() {
-// 		// newconfig
-// 		config := sarama.NewConfig()
+	m := map[string]struct{}{}
 
-// 		// clientID is service name
-// 		config.ClientID = conf.Service.Name
-
-// 		// config.Net
-// 		config.Net.MaxOpenRequests = 1
-
-// 		if conf.Kafka.Consumer {
-// 			// config.Consumer
-// 			config.Consumer.Return.Errors = true
-// 			config.Consumer.MaxProcessingTime = time.Second
-// 			config.Consumer.Fetch.Max = 500
-// 			config.Consumer.Fetch.Min = 10
-// 			config.Consumer.Group.Heartbeat.Interval = time.Second * 5
-// 			config.Consumer.Group.Session.Timeout = time.Second * 15
-// 			switch conf.Kafka.Assignor {
-// 			case "sticky":
-// 				config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategySticky
-// 			case "roundrobin":
-// 				config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRoundRobin
-// 			case "range":
-// 				config.Consumer.Group.Rebalance.Strategy = sarama.BalanceStrategyRange
-// 			default:
-// 				logrus.WithFields(logrus.Fields{
-// 					"error": fmt.Sprintf("Unrecognized consumer group partition assignor: %s", conf.Kafka.Assignor),
-// 				}).Fatal(fmt.Sprintf("Unrecognized consumer group partition assignor: %s", conf.Kafka.Assignor))
-// 				err = fmt.Errorf("Unrecognized consumer group partition assignor: %s", conf.Kafka.Assignor)
-// 			}
-
-// 		}
-
-// 		k.Config = config
-// 		k.Count = conf.Service.MinCL
-// 	})
-
-// 	return err
-// }
-
-// // Consumer meth
-// func (k *Client) Consumer(ctx context.Context, brokers []string, topic string) (sarama.Consumer, error) {
-// 	master, err := sarama.NewConsumer(brokers, k.Config)
-// 	if err != nil {
-// 		logrus.WithFields(logrus.Fields{
-// 			"error": fmt.Sprintf("Error in newConsumer: %s", err),
-// 		}).Fatal(fmt.Sprintf("Error in newConsumer: %s", err))
-// 		return nil, err
-// 	}
-
-// 	consumers := make(chan *sarama.ConsumerMessage)
-// 	errors := make(chan *sarama.ConsumerError)
-
-// 	partitions, err := master.Partitions(topic)
-// 	if err != nil {
-// 		logrus.Warn(err)
-// 		return nil, err
-// 	}
-
-// 	consumer, err := master.ConsumePartition(topic, partitions[0], sarama.OffsetNewest)
-// 	if err != nil {
-// 		logrus.Warn(err)
-// 		return nil, err
-// 	}
-
-// 	go func(consumer sarama.PartitionConsumer) {
-// 		for {
-// 			select {
-// 			case consumerError := <-consumer.Errors():
-// 				errors <- consumerError
-
-// 			case msg := <-consumer.Messages():
-// 				consumers <- msg
-// 			}
-// 		}
-// 	}(consumer)
-
-// 	go func(chs chan *sarama.ConsumerMessage) {
-// 		for {
-// 			select {
-// 			case msg := <-chs:
-// 				id := fmt.Sprintf("%v-%d-%d", msg.Topic, msg.Partition, msg.Offset)
-			
-
-// 				var item notif.Notification
-// 				if err := json.Unmarshal(msg.Value, &item); err != nil {
-// 					logrus.WithFields(logrus.Fields{
-// 						"error": fmt.Sprintf("cannot unmarshal data from kafka Error: %s - id: %s", err, id),
-// 					}).Fatal(fmt.Sprintf("cannot unmarshal data from kafka Error: %s - id: %s", err, id))
-// 				}
-
-
-// 				fmt.Println("/////////////")
-// 				fmt.Println("/////////////")
-// 				fmt.Println(item)
-// 				fmt.Println(conf.GlobalConfigs.Kafka.Brokers, conf.GlobalConfigs.Kafka.Topics.Notif)
-// 				fmt.Println("/////////////")
-// 				fmt.Println("/////////////")
-
-
-// 				service.Streamer.Store(context.Background(), k.Count, item)
-// 				k.Count++
-
-// 				if k.Count == conf.GlobalConfigs.Service.MaxCl {
-// 					k.Count = conf.GlobalConfigs.Service.MinCL
-// 				}
-// 			case consumerError := <-errors:
-// 				logrus.Warn(string(consumerError.Topic), string(consumerError.Partition), consumerError.Err)
-// 			}
-// 		}
-// 	}(consumers)
-
-// 	return master, nil
-// }
+	for _, p := range partitions {
+		m[p.Topic] = struct{}{}
+	}
+	return m,nil
+}

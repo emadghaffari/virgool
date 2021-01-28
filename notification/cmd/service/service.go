@@ -255,7 +255,7 @@ func initRedis() error {
 	return redis.Database.Connect(&conf.GlobalConfigs)
 }
 func initKafka() error {
-	return kf.Database.Connect(&conf.GlobalConfigs)
+	return kf.Database.Connect(context.Background(),&conf.GlobalConfigs,conf.GlobalConfigs.Kafka.Topics.Notif,0)
 }
 
 func initStream() (sarama.Consumer, error) {
