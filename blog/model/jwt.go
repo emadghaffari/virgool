@@ -31,6 +31,7 @@ type intef interface {
 }
 type wt struct{}
 
+// Get, for get values from jwt token
 func (j *wt) Get(ctx context.Context, token string, response interface{}) error {
 	uuid,err := j.verify(token)
 	if err != nil {
@@ -43,6 +44,7 @@ func (j *wt) Get(ctx context.Context, token string, response interface{}) error 
 	return nil
 }
 
+// verify the jwt
 func (j *wt) verify(tk string) (string, error) {
 
 	token, err := jjwt.Parse(tk, func(token *jjwt.Token) (interface{}, error) {
