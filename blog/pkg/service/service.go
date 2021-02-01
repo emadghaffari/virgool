@@ -69,6 +69,8 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 		return message, "ERROR", fmt.Errorf(err.Error())
 	}
 
+	// make slice of tags len
+	// change format of tags
 	t := make([]*model.Tag, len(Tags))
 	for kt, vt := range Tags {
 		t[kt] = &model.Tag{
@@ -80,6 +82,8 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 		return message, "ERROR", fmt.Errorf(err.Error())
 	}
 
+	// make slice of params len
+	// change format of params
 	p := make([]*model.Param, len(params))
 	for kp, vp := range params {
 		p[kp] = &model.Param{
@@ -91,6 +95,8 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 		return message, "ERROR", fmt.Errorf(err.Error())
 	}
 
+	// make slice of medias len
+	// change format of medias
 	m := make([]*model.Media, len(medias))
 	for km, vm := range medias {
 		m[km] = &model.Media{
