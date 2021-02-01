@@ -34,20 +34,24 @@ func NewFileStore(folder string) *FileStore {
 
 // Store meth for store a new file into blog service
 func (f *FileStore) Store(folder string, fileType string, file bytes.Buffer) (*FileInfo, error) {
+	// generate new UUID
 	id, err := uuid.NewRandom()
 	if err != nil {
 		logrus.Warn(fmt.Sprintf("Error in Store a new File ID: %s - Type: %s - Error: %v", id, fileType, err))
 		return nil, err
 	}
 
+	// take default path for file
 	path := fmt.Sprintf("%s/%s%s", folder, id, fileType)
 
+	// create file
 	oFile, err := os.Create(path)
 	if err != nil {
 		logrus.Warn(fmt.Sprintf("Error in os.Create for a new File ID: %s - Type: %s - Error: %v", id, fileType, err))
 		return nil, err
 	}
 
+	// write and upload file
 	if _, err := file.WriteTo(oFile); err != nil {
 		logrus.Warn(fmt.Sprintf("Error in file.WriteTo os.Created File ID: %s - Type: %s - Error: %v", id, fileType, err))
 		return nil, err
@@ -56,6 +60,7 @@ func (f *FileStore) Store(folder string, fileType string, file bytes.Buffer) (*F
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 
+	// make new file result
 	f.files[id.String()] = &FileInfo{
 		ID:   id.String(),
 		Type: fileType,
