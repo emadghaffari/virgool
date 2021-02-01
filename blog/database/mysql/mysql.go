@@ -32,6 +32,7 @@ type msql struct {
 	DB *gorm.DB
 }
 
+// connect to mysql database
 func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger) error {
 	once.Do(func() {
 		if config.MYSQL.Namespace != "" {
