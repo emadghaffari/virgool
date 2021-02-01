@@ -35,6 +35,7 @@ type BlogService interface {
 
 type basicBlogService struct{}
 
+// CreatePost method for create new pos
 func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("create-post")
@@ -45,6 +46,7 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
 
+	// remove symbols
 	slug, err = str.RemoveSymbols(slug)
 	if err != nil {
 		return "Extra Symbols into slug", "ERROR", err
