@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	endpoint "github.com/emadghaffari/virgool/blog/pkg/endpoint"
-	http1 "github.com/go-kit/kit/transport/http"
 	"net/http"
+
+	http1 "github.com/go-kit/kit/transport/http"
+	"github.com/sirupsen/logrus"
+
+	endpoint "github.com/emadghaffari/virgool/blog/pkg/endpoint"
 )
 
 // makeCreatePostHandler creates the handler logic
@@ -31,6 +34,9 @@ func encodeCreatePostResponse(ctx context.Context, w http.ResponseWriter, respon
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		logrus.Warn(err.Error())
+	}
 	return
 }
 
@@ -56,6 +62,9 @@ func encodeUpdatePostResponse(ctx context.Context, w http.ResponseWriter, respon
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 	return
 }
 
@@ -81,6 +90,9 @@ func encodeGetPostResponse(ctx context.Context, w http.ResponseWriter, response 
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 	return
 }
 
@@ -106,6 +118,9 @@ func encodeDeletePostResponse(ctx context.Context, w http.ResponseWriter, respon
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 	return
 }
 
@@ -131,6 +146,9 @@ func encodeCreateTagResponse(ctx context.Context, w http.ResponseWriter, respons
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 	return
 }
 
@@ -156,6 +174,9 @@ func encodeGetTagResponse(ctx context.Context, w http.ResponseWriter, response i
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 	return
 }
 
@@ -181,6 +202,9 @@ func encodeUpdateTagResponse(ctx context.Context, w http.ResponseWriter, respons
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 	return
 }
 
@@ -206,6 +230,9 @@ func encodeDeleteTagResponse(ctx context.Context, w http.ResponseWriter, respons
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 	return
 }
 
@@ -231,11 +258,17 @@ func encodeUploadResponse(ctx context.Context, w http.ResponseWriter, response i
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 	return
 }
 func ErrorEncoder(_ context.Context, err error, w http.ResponseWriter) {
 	w.WriteHeader(err2code(err))
-	json.NewEncoder(w).Encode(errorWrapper{Error: err.Error()})
+	err = json.NewEncoder(w).Encode(errorWrapper{Error: err.Error()})
+	if err != nil {
+			logrus.Warn(err.Error())
+		}
 }
 func ErrorDecoder(r *http.Response) error {
 	var w errorWrapper
