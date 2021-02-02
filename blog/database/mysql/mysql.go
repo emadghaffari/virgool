@@ -16,7 +16,6 @@ import (
 var (
 	// Database var
 	Database  Mysqli = &msql{}
-	namespace string = ""
 	err       error
 	once      sync.Once
 )
@@ -35,9 +34,6 @@ type msql struct {
 // connect to mysql database
 func (m *msql) Connect(config *conf.GlobalConfiguration, log logrus.FieldLogger) error {
 	once.Do(func() {
-		if config.MYSQL.Namespace != "" {
-			namespace = config.MYSQL.Namespace
-		}
 
 		conf := &gorm.Config{}
 
