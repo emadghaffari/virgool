@@ -43,18 +43,19 @@ var logger log.Logger
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.
 var fs = flag.NewFlagSet("auth", flag.ExitOnError)
-var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
-var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
-var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
-var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
-var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
 
+// Run func
 func Run() {
-	fs.Parse(os.Args[1:])
+	err := fs.Parse(os.Args[1:])
+	if err != nil {
+		logrus.Warn(err.Error())
+	}
 
 	// Read configs
 	if err := initConfigs(); err != nil {
-		logger.Log("exit")
+		if err := logger.Log("exit");err != nil {
+			logrus.Warn(err.Error())
+		}
 		return
 	}
 
@@ -65,20 +66,26 @@ func Run() {
 	// components that use it, as a dependency
 	closer, err := initJaeger()
 	if err != nil {
-		logger.Log("exit")
+		if err := logger.Log("exit");err != nil {
+			logrus.Warn(err.Error())
+		}
 		return
 	}
 	defer closer.Close()
 
 	// connect to local database
 	if err := initDatabase(); err != nil {
-		logger.Log("exit")
+		if err := logger.Log("exit");err != nil {
+			logrus.Warn(err.Error())
+		}
 		return
 	}
 
 	// connect to local initRedis
 	if err := initRedis(); err != nil {
-		logger.Log("exit")
+		if err := logger.Log("exit");err != nil {
+			logrus.Warn(err.Error())
+		}
 		return
 	}
 
@@ -95,7 +102,9 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
-	logger.Log("exit", g.Run())
+	if err := logger.Log("exit", g.Run());err != nil {
+			logrus.Warn(err.Error())
+		}
 
 }
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
@@ -105,10 +114,14 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
 	grpcListener, err := net.Listen("tcp", conf.GlobalConfigs.GRPC.Port)
 	if err != nil {
-		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
+		if err := logger.Log("transport", "gRPC", "during", "Listen", "err", err);err != nil {
+			logrus.Warn(err.Error())
+		}
 	}
 	g.Add(func() error {
-		logger.Log("transport", "gRPC", "addr", conf.GlobalConfigs.GRPC.Port)
+		if err := logger.Log("transport", "gRPC", "addr", conf.GlobalConfigs.GRPC.Port);err != nil {
+			logrus.Warn(err.Error())
+		}
 
 		// UnaryInterceptor and OpenTracingServerInterceptor for tracer
 		baseServer := grpc1.NewServer(
@@ -133,10 +146,14 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	httpHandler := pkghttp.NewHTTPHandler(endpoints, map[string][]http1.ServerOption{})
 	httpListener, err := net.Listen("tcp", conf.GlobalConfigs.HTTP.Port)
 	if err != nil {
-		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
+		if err := logger.Log("transport", "HTTP", "during", "Listen", "err", err);err != nil {
+			logrus.Warn(err.Error())
+		}
 	}
 	g.Add(func() error {
-		logger.Log("transport", "HTTP", "addr", conf.GlobalConfigs.HTTP.Port)
+		if err := logger.Log("transport", "HTTP", "addr", conf.GlobalConfigs.HTTP.Port);err != nil {
+			logrus.Warn(err.Error())
+		}
 		return http.Serve(httpListener, httpHandler)
 	}, func(error) {
 		httpListener.Close()
@@ -167,10 +184,14 @@ func initMetricsEndpoint(g *group.Group) {
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
 	debugListener, err := net.Listen("tcp", conf.GlobalConfigs.DEBUG.Port)
 	if err != nil {
-		logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err)
+		if err := logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err);err != nil {
+			logrus.Warn(err.Error())
+		}
 	}
 	g.Add(func() error {
-		logger.Log("transport", "debug/HTTP", "addr", conf.GlobalConfigs.DEBUG.Port)
+		if err := logger.Log("transport", "debug/HTTP", "addr", conf.GlobalConfigs.DEBUG.Port);err != nil {
+			logrus.Warn(err.Error())
+		}
 		return http.Serve(debugListener, http.DefaultServeMux)
 	}, func(error) {
 		debugListener.Close()
@@ -233,7 +254,9 @@ func initJaeger() (io.Closer, error) {
 		jaegercfg.ZipkinSharedRPCSpan(true),
 	)
 	if err != nil {
-		logger.Log("during", "Listen", "jaeger", "err", err)
+		if err := logger.Log("during", "Listen", "jaeger", "err", err);err != nil {
+			logrus.Warn(err.Error())
+		}
 		return nil, err
 	}
 
