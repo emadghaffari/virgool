@@ -3,8 +3,6 @@ package model
 import (
 	"context"
 	"fmt"
-	"math/rand"
-	"time"
 
 	jjwt "github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
@@ -17,13 +15,6 @@ var (
 	// JWT variable instance of intef
 	JWT intef = &wt{}
 )
-
-// jwt struct
-type jwt struct {
-	AccessUUID   string `json:"uuid"`
-	AtExpires    int64  `json:"exp"`
-	RtExpires    int64  `json:"rexp"`
-}
 
 type intef interface {
 	Get(ctx context.Context, token string, response interface{}) error
@@ -77,15 +68,4 @@ func (j *wt) verify(tk string) (string, error) {
 	}
 	logrus.Warn(fmt.Sprintf("Error in jwt token verify: %s", err))
 	return "", err
-}
-
-// Generate hash key
-func hasher(lenght int) string {
-	letters := []int32("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789-&()_")
-	rand.Seed(time.Now().UnixNano())
-	b := make([]int32, lenght)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
 }
