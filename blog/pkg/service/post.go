@@ -93,6 +93,8 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 
 	return "post created successfully", "SUCCESS", err
 }
+
+// update a post
 func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("update-post")
@@ -111,7 +113,9 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 		PublishedAT: time.Now(),
 	}
 
-	err = tx.Table("posts").Preload("Params").Preload("Media").Preload("Tags").Where("user_id = ? AND slug = ?", uint64(user["id"].(float64)), slug).First(&post).Error
+	err = tx.Table("posts").
+		Where("user_id = ? AND slug = ?", uint64(user["id"].(float64)), slug).
+		First(&post).Error
 	if err != nil {
 		tx.Rollback()
 		return "post not found", "ERROR", err
@@ -147,8 +151,6 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 	post.Status = Status
 	post.Text = text
 
-	// FIXME
-	// change update model
 	err = tx.Table("posts").
 		Preload("Params").
 		Preload("Media").
@@ -168,10 +170,14 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 
 	return message, status, err
 }
+
+// get post
 func (b *basicBlogService) GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error) {
 	// TODO implement the business logic of GetPost
 	return posts, message, status, err
 }
+
+// delete post
 func (b *basicBlogService) DeletePost(ctx context.Context, filter []*model.Query, token string) (message string, status string, err error) {
 	// TODO implement the business logic of DeletePost
 	return message, status, err
