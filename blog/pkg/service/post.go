@@ -19,7 +19,10 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 	span := tracer.StartSpan("create-post")
 	defer span.Finish()
 
-	user := ctx.Value(model.User).(map[string]interface{})
+	user, ok := ctx.Value(model.User).(map[string]interface{})
+	if !ok {
+		return "user not found", "ERROR", err
+	}
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
@@ -95,7 +98,10 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 	span := tracer.StartSpan("update-post")
 	defer span.Finish()
 
-	user := ctx.Value(model.User).(map[string]interface{})
+	user, ok := ctx.Value(model.User).(map[string]interface{})
+	if !ok {
+		return "user not found", "ERROR", err
+	}
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
