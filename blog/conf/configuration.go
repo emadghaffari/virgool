@@ -32,6 +32,7 @@ type GlobalConfiguration struct {
 	Jaeger            Jaeger
 	Kafka             Kafka
 	JWT               JWT
+	ELK               ELK
 }
 
 // DBConfiguration struct
@@ -108,4 +109,9 @@ type Topic struct {
 type JWT struct {
 	RSecret string `yaml:"jwt.rSecret"`
 	Secret  string `yaml:"jwt.secret"`
+}
+
+// ELK , elasticsearch - kibana - logstash
+type ELK struct {
+	URLs []string `yaml:"elk.urls"`
 }
