@@ -16,19 +16,23 @@ var (
 	once sync.Once
 )
 
+// elasticsearch interface
 type elasticsearch interface {
 	Connect(config *conf.GlobalConfiguration) error
 	GetClient() *el.Client
 }
 
+// elk struct
 type elk struct {
 	client *el.Client
 }
 
+// GetClient meth
 func (e *elk) GetClient() *el.Client {
 	return e.client
 }
 
+// Connect to elasticsearch service
 func (e *elk) Connect(conf *conf.GlobalConfiguration) (err error) {
 	e.client, err = el.NewClient(el.SetURL(conf.ELK.URLs...))
 	if err != nil {
