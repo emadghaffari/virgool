@@ -7,6 +7,7 @@ import (
 	el "github.com/olivere/elastic/v7"
 	"github.com/sirupsen/logrus"
 
+	"github.com/emadghaffari/seeder/seeder"
 	"github.com/emadghaffari/virgool/blog/conf"
 )
 
@@ -48,17 +49,17 @@ func (e *elk) Connect(conf *conf.GlobalConfiguration) (err error) {
 	return err
 }
 
-func (e *elk) Store(ctx context.Context,index string, data interface{}) (*el.IndexResponse,error) {
-	
-	put,err := e.client.Index().
-	Index(index).
-	Type(index).
-	Id("1").
-	BodyJson(data).
-	Do(ctx)
+func (e *elk) Store(ctx context.Context, index string, data interface{}) (*el.IndexResponse, error) {
+
+	put, err := e.client.Index().
+		Index(index).
+		Type(index).
+		Id(seeder.RandomHash(25)).
+		BodyJson(data).
+		Do(ctx)
 	if err != nil {
-		logrus.Warn("Error in index new document into elasticsearch: %s",err)
-		return nil,err
+		logrus.Warn("Error in index new document into elasticsearch: %s", err)
+		return nil, err
 	}
-	return put,nil
+	return put, nil
 }
