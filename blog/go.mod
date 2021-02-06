@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/emadghaffari/seeder v0.0.0-20210117131738-3b0aea8d9360
+	github.com/emadghaffari/seeder v0.0.0-20210206142430-9d34df152667
 	github.com/go-kit/kit v0.10.0
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/golang/protobuf v1.4.3

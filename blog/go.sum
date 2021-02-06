@@ -79,6 +79,8 @@ github.com/emadghaffari/seeder v0.0.0-20210107175858-711e177af488 h1:wKFVNHREZyO
 github.com/emadghaffari/seeder v0.0.0-20210107175858-711e177af488/go.mod h1:Uxp+bPZSSvJ9vzdg3+b7ux83KW7xzP2R6lJ7ns8N+0I=
 github.com/emadghaffari/seeder v0.0.0-20210117131738-3b0aea8d9360 h1:eUSAVZLt7FCx+xxb9FUft7knU4j3E2o2IE9fXY+CApc=
 github.com/emadghaffari/seeder v0.0.0-20210117131738-3b0aea8d9360/go.mod h1:Uxp+bPZSSvJ9vzdg3+b7ux83KW7xzP2R6lJ7ns8N+0I=
+github.com/emadghaffari/seeder v0.0.0-20210206142430-9d34df152667 h1:p8KlJSJz9VaP7utnKixDmpjeUtyUH6NIGlPantrVrO4=
+github.com/emadghaffari/seeder v0.0.0-20210206142430-9d34df152667/go.mod h1:Uxp+bPZSSvJ9vzdg3+b7ux83KW7xzP2R6lJ7ns8N+0I=
 github.com/emadghaffari/virgool v0.0.0-20210116063807-68b30da8fa19 h1:ULDceLB4cUY1zpHqJc/Ly6XQSKce/g7uxnQRa18VLos=
 github.com/envoyproxy/go-control-plane v0.6.9/go.mod h1:SBwIajubJHhxtWwsL9s8ss4safvEdbitLhGGK48rN6g=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
