@@ -114,4 +114,7 @@ type JWT struct {
 // ELK , elasticsearch - kibana - logstash
 type ELK struct {
 	URLs []string `yaml:"elk.urls"`
+	Username string `yaml:"elk.username"`
+	Password string `yaml:"elk.password"`
+	HealthCheckTime time.Time `yaml:"elk.health_check"`
 }

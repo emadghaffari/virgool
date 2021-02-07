@@ -20,7 +20,9 @@ var (
 
 // elasticsearch interface
 type elasticsearch interface {
-	Connect(config *conf.GlobalConfiguration) error
+	Connect(conf *conf.GlobalConfiguration,logger el.Logger) (err error)
+	Store(ctx context.Context, index string, data interface{}) (*el.IndexResponse, error)
+	SetClient(client *el.Client)
 	GetClient() *el.Client
 }
 
@@ -29,14 +31,25 @@ type elk struct {
 	client *el.Client
 }
 
-// GetClient meth
+// SetClient method
+// for set new client for elk
+func (e *elk) SetClient(client *el.Client){
+	e.client = client
+}
+
+// GetClient method
 func (e *elk) GetClient() *el.Client {
 	return e.client
 }
 
 // Connect to elasticsearch service
-func (e *elk) Connect(conf *conf.GlobalConfiguration) (err error) {
-	e.client, err = el.NewClient(el.SetURL(conf.ELK.URLs...))
+func (e *elk) Connect(conf *conf.GlobalConfiguration,logger el.Logger) (err error) {
+	client, err := el.NewClient(
+		el.SetURL(conf.ELK.URLs...),
+		el.SetBasicAuth(conf.ELK.Username,conf.ELK.Password),
+		el.SetErrorLog(logger),
+		el.SetInfoLog(logger),
+	)
 	if err != nil {
 		return err
 	}
@@ -45,6 +58,8 @@ func (e *elk) Connect(conf *conf.GlobalConfiguration) (err error) {
 	if _, _, err = ps.Do(context.Background()); err != nil {
 		return err
 	}
+
+	e.SetClient(client)
 
 	return err
 }
@@ -63,3 +78,4 @@ func (e *elk) Store(ctx context.Context, index string, data interface{}) (*el.In
 	}
 	return put, nil
 }
+
