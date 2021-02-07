@@ -23,6 +23,12 @@ var (
 type elasticsearch interface {
 	Connect(conf *conf.GlobalConfiguration,logger el.Logger) (err error)
 	Store(ctx context.Context, index string, data interface{}) (*el.IndexResponse, error)
+	Index(ctx context.Context,index string,docType string,doc interface{}) (*el.IndexResponse,error)  
+	IndexExists(ctx context.Context,index string) (error) 
+	Delete(ctx context.Context,index string, docType string, id string) (*el.DeleteResponse,error) 
+	Get(index string,docType string,id string) (*el.GetResult, error)
+	Search(index string, query el.Query) (*el.SearchResult,error)
+	Update(index string,docType string,id string, script *el.Script) (*el.UpdateResponse, error)
 	SetClient(client *el.Client)
 	GetClient() *el.Client
 }
