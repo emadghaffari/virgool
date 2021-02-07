@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	el "github.com/olivere/elastic/v7"
@@ -77,5 +78,32 @@ func (e *elk) Store(ctx context.Context, index string, data interface{}) (*el.In
 		return nil, err
 	}
 	return put, nil
+}
+
+// Index meth
+func (e *elk) Index(ctx context.Context,index string,docType string,doc interface{}) (*el.IndexResponse,error)  {
+	
+	in,err := e.client.Index().Index(index).BodyJson(doc).Type(docType).Do(ctx)
+	if err != nil {
+		logrus.Warn(err.Error())
+		return nil,err
+	}
+	
+	return in,nil
+}
+
+func (e *elk) IndexExists(ctx context.Context,index string) (error) {
+	exists,err := e.client.IndexExists(index).Do(ctx)
+	if err != nil {
+		logrus.Warn(err.Error())
+		return err
+	}
+	if !exists{
+		logrus.Warn(fmt.Sprintf("Index does not exist yet: %s", index), err)
+		return fmt.Errorf(fmt.Sprintf("Index does not exist yet: %s", index))
+	}
+
+	return nil
+	
 }
 
