@@ -118,3 +118,17 @@ func (e *elk) Delete(ctx context.Context,index string, docType string, id string
 	return resp,nil
 }
 
+// Get meth
+// index,doctype and id for get
+func (e *elk) Get(index string,docType string,id string) (*el.GetResult, error){
+	elk,err := e.client.Get().
+	Id(id).
+	Index(index).
+	Type(docType).
+	Do(context.Background())
+	if err != nil {
+		logrus.Warn(fmt.Sprintf("error in Get data from elastic %s", id), err)
+		return nil,err
+	}
+	return elk,nil
+}
