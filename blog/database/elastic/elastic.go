@@ -145,3 +145,18 @@ func (e *elk) Search(index string, query el.Query) (*el.SearchResult,error){
 	return elk,nil
 }
 
+// Update meth
+// index,Type,id and script query for Update
+func (e *elk) Update(index string,docType string,id string, script *el.Script) (*el.UpdateResponse, error){
+	elk,err := e.client.Update().
+	Index(index).
+	Type(docType).
+	Id(id).
+	Script(script).
+	Do(context.Background())
+	if err != nil {
+		logrus.Warn(fmt.Sprintf("error in Get data from elastic %s", id), err)
+		return nil, fmt.Errorf(fmt.Sprintf("error in get from elastic", err))
+	}
+	return elk,nil
+}
