@@ -107,3 +107,14 @@ func (e *elk) IndexExists(ctx context.Context,index string) (error) {
 	
 }
 
+
+func (e *elk) Delete(ctx context.Context,index string, docType string, id string) (*el.DeleteResponse,error) {
+	resp,err := e.client.Delete().Id(id).Index(index).Type(docType).Do(ctx)
+	if err != nil {
+		logrus.Warn(err.Error())
+		return nil,err
+	}
+
+	return resp,nil
+}
+
