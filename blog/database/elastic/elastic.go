@@ -132,3 +132,16 @@ func (e *elk) Get(index string,docType string,id string) (*el.GetResult, error){
 	}
 	return elk,nil
 }
+
+func (e *elk) Search(index string, query el.Query) (*el.SearchResult,error){
+	elk,err := e.client.Search(index).
+	Query(query).
+	RestTotalHitsAsInt(true).
+	Do(context.Background())
+	if err != nil {
+		logrus.Warn(fmt.Sprintf("error in Search data from elastic %v", query), err)
+		return nil, fmt.Errorf(fmt.Sprintf("error in Search from elastic %s", err))
+	}
+	return elk,nil
+}
+
