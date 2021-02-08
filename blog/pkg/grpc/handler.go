@@ -173,7 +173,7 @@ func encodeGetPostResponse(_ context.Context, r interface{}) (interface{}, error
 		}
 
 		for _, p := range v.Params {
-			query = append(query, &pb.Query{Key: p.Name, Value: p.Value})
+			query = append(query, &pb.Query{Key: p.Name, Value: p.Value.(string)})
 		}
 
 		for _, t := range v.Tags {
