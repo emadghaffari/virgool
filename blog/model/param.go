@@ -4,8 +4,8 @@ import "time"
 
 // Query struct
 type Query struct {
-	Name  string `validate:"required" json:"name" gorm:"not null;type:varchar(80);"`
-	Value string `validate:"required" json:"value" gorm:"not null;type:varchar(120);"`
+	Name  string      `validate:"required" json:"name" gorm:"not null;type:varchar(80);"`
+	Value interface{} `validate:"required" json:"value" gorm:"not null;type:varchar(120);"`
 }
 
 // Param struct
