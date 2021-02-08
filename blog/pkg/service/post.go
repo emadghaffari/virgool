@@ -165,6 +165,13 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 		return "we can not update your post", "ERROR", err
 	}
 
+	// FIXME fix this section
+	// _, err = elastic.Database.Update("blog", "_doc", post.ID, nil)
+	// if err != nil {
+	// 	tx.Rollback()
+	// 	return "we can not update your post", "ERROR", err
+	// }
+
 	tx.Commit()
 
 	message = "post updated successfully"
@@ -197,6 +204,16 @@ func (b *basicBlogService) GetPost(ctx context.Context, must []*model.Query, sho
 
 // delete post
 func (b *basicBlogService) DeletePost(ctx context.Context, filter []*model.Query, token string) (message string, status string, err error) {
-	// TODO implement the business logic of DeletePost
+
+	for _, id := range filter {
+		id, ok := id.Value.(string)
+		if ok {
+			del, err := elastic.Database.Delete(ctx, "blog", "_doc", id)
+			if err != nil {
+				return fmt.Sprintf("error in delete a post: %s - deleted ID: %s", err, del.Id), "ERROR", err
+			}
+		}
+	}
+
 	return message, status, err
 }
