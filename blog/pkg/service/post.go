@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/opentracing/opentracing-go"
 
+	"github.com/emadghaffari/virgool/blog/database/elastic"
 	"github.com/emadghaffari/virgool/blog/database/mysql"
 	model "github.com/emadghaffari/virgool/blog/model"
 	"github.com/emadghaffari/virgool/blog/utils/str"
@@ -173,8 +175,24 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 
 // get post
 func (b *basicBlogService) GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error) {
-	// TODO implement the business logic of GetPost
-	return posts, message, status, err
+	query, err := elastic.Database.BuildQuery(must, should, not, filter)
+	if err != nil {
+		return nil, "Failed To Create a Search Query", "500", fmt.Errorf("Failed To Create a Search Query: %s", err)
+	}
+	result, err := elastic.Database.Search("blog", query)
+	if err != nil {
+		return nil, "Failed To Search", "500", fmt.Errorf("Failed To Search: %s", err)
+	}
+
+	for _, hit := range result.Hits.Hits {
+		var post model.Post
+		if err := json.Unmarshal(hit.Source, &post); err != nil {
+			return posts, "Failed To Unmarshal Data", "500", fmt.Errorf("Failed To Unmarshal Data: %v", hit)
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, " posts searched successfully", "SUCCESS", nil
 }
 
 // delete post
