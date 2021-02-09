@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	el "github.com/olivere/elastic/v7"
 	"github.com/sirupsen/logrus"
@@ -58,6 +59,8 @@ func (e *elk) Connect(conf *conf.GlobalConfiguration, logger el.Logger) (err err
 		el.SetBasicAuth(conf.ELK.Username, conf.ELK.Password),
 		el.SetErrorLog(logger),
 		el.SetInfoLog(logger),
+		el.SetHealthcheck(true),
+		el.SetHealthcheckInterval(time.Duration(conf.ELK.HealthCheckTime)),
 	)
 	if err != nil {
 		return err

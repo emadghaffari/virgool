@@ -9,7 +9,7 @@ import (
 
 	"github.com/opentracing/opentracing-go"
 
-	"github.com/emadghaffari/virgool/blog/database/elastic"
+	el "github.com/emadghaffari/virgool/blog/database/elastic"
 	"github.com/emadghaffari/virgool/blog/database/mysql"
 	model "github.com/emadghaffari/virgool/blog/model"
 	"github.com/emadghaffari/virgool/blog/utils/str"
@@ -166,7 +166,7 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 	}
 
 	// FIXME fix this section
-	// _, err = elastic.Database.Update("blog", "_doc", post.ID, nil)
+	// _, err = el.Database.Update("blog", "_doc", strconv.Itoa(int(post.ID)), &elastic.Script{})
 	// if err != nil {
 	// 	tx.Rollback()
 	// 	return "we can not update your post", "ERROR", err
@@ -182,11 +182,11 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 
 // get post
 func (b *basicBlogService) GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error) {
-	query, err := elastic.Database.BuildQuery(must, should, not, filter)
+	query, err := el.Database.BuildQuery(must, should, not, filter)
 	if err != nil {
 		return nil, "Failed To Create a Search Query", "500", fmt.Errorf("Failed To Create a Search Query: %s", err)
 	}
-	result, err := elastic.Database.Search("blog", query)
+	result, err := el.Database.Search("blog", query)
 	if err != nil {
 		return nil, "Failed To Search", "500", fmt.Errorf("Failed To Search: %s", err)
 	}
@@ -208,7 +208,7 @@ func (b *basicBlogService) DeletePost(ctx context.Context, filter []*model.Query
 	for _, id := range filter {
 		id, ok := id.Value.(string)
 		if ok {
-			del, err := elastic.Database.Delete(ctx, "blog", "_doc", id)
+			del, err := el.Database.Delete(ctx, "blog", "_doc", id)
 			if err != nil {
 				return fmt.Sprintf("error in delete a post: %s - deleted ID: %s", err, del.Id), "ERROR", err
 			}
