@@ -196,7 +196,7 @@ func (e *elk) Update(index string, docType string, id string, script *el.Script)
 		Do(context.Background())
 	if err != nil {
 		logrus.Warn(fmt.Sprintf("error in Get data from elastic %s", id), err)
-		return nil, fmt.Errorf(fmt.Sprintf("error in get from elastic", err))
+		return nil, fmt.Errorf(fmt.Sprintf("error in get from elastic: %s", err))
 	}
 	return elk, nil
 }
