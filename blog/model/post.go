@@ -37,7 +37,7 @@ type Post struct {
 	Description string     `validate:"required" json:"description" gorm:"type:text"`
 	Text        string     `validate:"required" json:"text" gorm:"type:text"`
 	Params      []*Param   `validate:"required" json:"params" gorm:"many2many:params_posts;association_foreignkey:ID;foreignkey:ID"`
-	Media       []*Media   `json:"-" gorm:"many2many:posts_medias;association_foreignkey:ID;foreignkey:ID"`
+	Media       []*Media   `json:"medias" gorm:"many2many:posts_medias;association_foreignkey:ID;foreignkey:ID"`
 	Tags        []*Tag     `validate:"required" json:"tags" gorm:"many2many:posts_tags;association_foreignkey:ID;foreignkey:ID"`
 	Status      StatusPost `validate:"required" json:"status" gorm:"default:pending;not null;type:ENUM('pending', 'published', 'deleted')" sql:"type:ENUM('pending', 'published', 'deleted')"`
 	Rate        uint8      `json:"rate" gorm:"gte:1;lte:5;default:1"`
