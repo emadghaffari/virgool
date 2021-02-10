@@ -12,7 +12,6 @@ import (
 	el "github.com/emadghaffari/virgool/blog/database/elastic"
 	"github.com/emadghaffari/virgool/blog/database/mysql"
 	model "github.com/emadghaffari/virgool/blog/model"
-	"github.com/emadghaffari/virgool/blog/utils/str"
 )
 
 // CreatePost method for create new pos
@@ -23,17 +22,11 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 
 	user, ok := ctx.Value(model.User).(map[string]interface{})
 	if !ok {
-		return "user not found", "ERROR", err
+		return "user not found", "ERROR", fmt.Errorf(fmt.Sprintf("error user not found: %s", err.Error()))
 	}
 
 	// begins a transaction
 	tx := mysql.Database.GetDatabase().Begin()
-
-	// remove symbols
-	slug, err = str.RemoveSymbols(slug)
-	if err != nil {
-		return "Extra Symbols into slug", "ERROR", err
-	}
 
 	// blog model
 	post := model.Post{
@@ -49,7 +42,7 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 	// try to store post with model
 	if gm := tx.Save(&post); gm.Error != nil {
 		tx.Rollback()
-		return message, "ERROR", fmt.Errorf(err.Error())
+		return "error in store new post", "ERROR", fmt.Errorf(fmt.Sprintf("error in store new post %s", err.Error()))
 	}
 
 	// make slice of tags len
@@ -62,7 +55,7 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 	}
 	if err := tx.Model(&post).Association("Tags").Append(t); err != nil {
 		tx.Rollback()
-		return message, "ERROR", fmt.Errorf(err.Error())
+		return "error in append tags into post", "ERROR", fmt.Errorf(fmt.Sprintf("error in append tags into post %s", err.Error()))
 	}
 
 	// make slice of params len
@@ -75,7 +68,7 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 	}
 	if err := tx.Model(&post).Association("Params").Append(p); err != nil {
 		tx.Rollback()
-		return message, "ERROR", fmt.Errorf(err.Error())
+		return "error in append params into post", "ERROR", fmt.Errorf(fmt.Sprintf("error in append params into post %s", err.Error()))
 	}
 
 	// make slice of medias len
@@ -88,12 +81,22 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 	}
 	if err := tx.Model(&post).Association("Media").Append(m); err != nil {
 		tx.Rollback()
-		return message, "ERROR", fmt.Errorf(err.Error())
+		return "error in append medias into post", "ERROR", fmt.Errorf(fmt.Sprintf("error in append medias into post %s", err.Error()))
 	}
 
 	tx.Commit()
 
-	return "post created successfully", "SUCCESS", err
+	var ps model.Post
+	if err := mysql.Database.GetDatabase().Table("posts").Preload("Media").Preload("Params").Preload("Tags").Where("slug=?", post.Slug).First(&ps).Error; err != nil {
+		return "error in get new post stored by customer", "ERROR", fmt.Errorf(fmt.Sprintf("error in get new post stored by customer %s", err.Error()))
+	}
+
+	if _, err := el.Database.Store(ctx, "blog", ps); err != nil {
+		tx.Rollback()
+		return "error in store post into search engine", "ERROR", fmt.Errorf(fmt.Sprintf("error in store post into search engine %s", err.Error()))
+	}
+
+	return "post created successfully", "SUCCESS", nil
 }
 
 // update a post
