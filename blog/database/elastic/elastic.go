@@ -9,7 +9,6 @@ import (
 	el "github.com/olivere/elastic/v7"
 	"github.com/sirupsen/logrus"
 
-	"github.com/emadghaffari/seeder/seeder"
 	"github.com/emadghaffari/virgool/blog/conf"
 	"github.com/emadghaffari/virgool/blog/model"
 )
@@ -24,13 +23,13 @@ var (
 // elasticsearch interface
 type elasticsearch interface {
 	Connect(conf *conf.GlobalConfiguration, logger el.Logger) (err error)
-	Store(ctx context.Context, index string, data interface{}) (*el.IndexResponse, error)
+	Store(ctx context.Context, index string, docType string, id string, data interface{}) (*el.IndexResponse, error)
 	Index(ctx context.Context, index string, docType string, doc interface{}) (*el.IndexResponse, error)
 	IndexExists(ctx context.Context, index string) error
 	Delete(ctx context.Context, index string, docType string, id string) (*el.DeleteResponse, error)
-	Get(index string, docType string, id string) (*el.GetResult, error)
-	Search(index string, query el.Query) (*el.SearchResult, error)
-	Update(index string, docType string, id string, script *el.Script) (*el.UpdateResponse, error)
+	Get(ctx context.Context, index string, docType string, id string) (*el.GetResult, error)
+	Search(ctx context.Context, index string, query el.Query) (*el.SearchResult, error)
+	Update(ctx context.Context, index string, docType string, id string, doc interface{}) (*el.UpdateResponse, error)
 	BuildQuery(must, should, not, filter []*model.Query) (*el.BoolQuery, error)
 	SetClient(client *el.Client)
 	GetClient() *el.Client
@@ -71,12 +70,12 @@ func (e *elk) Connect(conf *conf.GlobalConfiguration, logger el.Logger) error {
 	return err
 }
 
-func (e *elk) Store(ctx context.Context, index string, data interface{}) (*el.IndexResponse, error) {
+func (e *elk) Store(ctx context.Context, index string, docType string, id string, data interface{}) (*el.IndexResponse, error) {
 
 	put, err := e.client.Index().
 		Index(index).
-		Type(index).
-		Id(seeder.RandomHash(25)).
+		Type(docType).
+		Id(fmt.Sprintf("%s-%s", index, id)).
 		BodyJson(data).
 		Do(ctx)
 	if err != nil {
@@ -114,7 +113,11 @@ func (e *elk) IndexExists(ctx context.Context, index string) error {
 }
 
 func (e *elk) Delete(ctx context.Context, index string, docType string, id string) (*el.DeleteResponse, error) {
-	resp, err := e.client.Delete().Id(id).Index(index).Type(docType).Do(ctx)
+	resp, err := e.client.Delete().
+		Id(fmt.Sprintf("%s-%s", index, id)).
+		Index(index).
+		Type(docType).
+		Do(ctx)
 	if err != nil {
 		logrus.Warn(err.Error())
 		return nil, err
@@ -125,12 +128,12 @@ func (e *elk) Delete(ctx context.Context, index string, docType string, id strin
 
 // Get meth
 // index,doctype and id for get
-func (e *elk) Get(index string, docType string, id string) (*el.GetResult, error) {
+func (e *elk) Get(ctx context.Context, index string, docType string, id string) (*el.GetResult, error) {
 	elk, err := e.client.Get().
-		Id(id).
+		Id(fmt.Sprintf("%s-%s", index, id)).
 		Index(index).
 		Type(docType).
-		Do(context.Background())
+		Do(ctx)
 	if err != nil {
 		logrus.Warn(fmt.Sprintf("error in Get data from elastic %s", id), err)
 		return nil, err
@@ -138,11 +141,11 @@ func (e *elk) Get(index string, docType string, id string) (*el.GetResult, error
 	return elk, nil
 }
 
-func (e *elk) Search(index string, query el.Query) (*el.SearchResult, error) {
+func (e *elk) Search(ctx context.Context, index string, query el.Query) (*el.SearchResult, error) {
 	elk, err := e.client.Search(index).
 		Query(query).
 		RestTotalHitsAsInt(true).
-		Do(context.Background())
+		Do(ctx)
 	if err != nil {
 		logrus.Warn(fmt.Sprintf("error in Search data from elastic %v", query), err)
 		return nil, fmt.Errorf(fmt.Sprintf("error in Search from elastic %s", err))
@@ -182,13 +185,13 @@ func (e *elk) BuildQuery(must, should, not, filter []*model.Query) (*el.BoolQuer
 
 // Update meth
 // index,Type,id and script query for Update
-func (e *elk) Update(index string, docType string, id string, script *el.Script) (*el.UpdateResponse, error) {
+func (e *elk) Update(ctx context.Context, index string, docType string, id string, doc interface{}) (*el.UpdateResponse, error) {
 	elk, err := e.client.Update().
 		Index(index).
 		Type(docType).
-		Id(id).
-		Script(script).
-		Do(context.Background())
+		Id(fmt.Sprintf("%s-%s", index, id)).
+		Doc(doc).
+		Do(ctx)
 	if err != nil {
 		logrus.Warn(fmt.Sprintf("error in Get data from elastic %s", id), err)
 		return nil, fmt.Errorf(fmt.Sprintf("error in get from elastic: %s", err))
