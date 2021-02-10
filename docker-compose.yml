@@ -16,6 +16,8 @@ services:
     ports:
       - 8800:8081
       - 8801:8082
+    networks:
+      - application
 
   # -----------------------------
   # notif service - send notifs [HTML, SMS]
@@ -33,6 +35,8 @@ services:
     ports:
       - 8900:8081
       - 8901:8082
+    networks:
+      - application
 
   # -----------------------------
   # blog service - CRUD [comments, tags, posts]
@@ -50,6 +54,8 @@ services:
     ports:
       - 9000:8081
       - 9001:8082
+    networks:
+      - application
 
   # -----------------------------
   # mysql database
@@ -83,6 +89,8 @@ services:
       # start_period: 40s
     volumes:
       - mysql-db:/var/lib/mysql
+    networks:
+      - application
 
   # -----------------------------
   # phpmyadmin
@@ -108,6 +116,8 @@ services:
       - 9595:80
     volumes:
       - /sessions
+    networks:
+      - application
 
   # -----------------------------
   # vault database
@@ -131,6 +141,8 @@ services:
       - IPC_LOCK
     depends_on:
       - consul
+    networks:
+      - application
 
   # -----------------------------
   # consul-worker config
@@ -144,6 +156,8 @@ services:
       - ./docker/vault/consul/config/consul-config.json:/consul/config/config.json
     depends_on:
       - consul
+    networks:
+      - application
 
   # -----------------------------
   # consul
@@ -158,6 +172,8 @@ services:
     volumes:
       - ./docker/vault/consul/config/consul-config.json:/consul/config/config.json
       - ./docker/vault/consul/data:/consul/data
+    networks:
+      - application
 
   # -----------------------------
   # jaeger tracer
@@ -167,6 +183,8 @@ services:
     ports:
       - "3333:6831/udp"
       - "3686:16686"
+    networks:
+      - application
 
   # -----------------------------
   # redis database
@@ -174,6 +192,8 @@ services:
   redis:
     hostname: redis
     image: redis
+    networks:
+      - application
 
   # -----------------------------
   # redis UI
@@ -186,6 +206,8 @@ services:
       - REDIS_HOSTS=local:redis:6379
     ports:
       - "6546:8081"
+    networks:
+      - application
 
   # -----------------------------
   # zookeeper
@@ -209,6 +231,8 @@ services:
     volumes:
       - ./docker/kafka/zoo1/data:/data
       - ./docker/kafka/zoo1/datalog:/datalog
+    networks:
+      - application
 
   # -----------------------------
   # zookeeper
@@ -231,6 +255,8 @@ services:
     volumes:
       - ./docker/kafka/zoo2/data:/data
       - ./docker/kafka/zoo2/datalog:/datalog
+    networks:
+      - application
 
   # -----------------------------
   # apache kafka
@@ -265,6 +291,8 @@ services:
       - ./docker/kafka/broker1/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
       # - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+    networks:
+      - application
 
   # -----------------------------
   # apache kafka
@@ -299,6 +327,8 @@ services:
       - ./docker/kafka/broker2/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
       # - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+    networks:
+      - application
 
   # -----------------------------
   # apache kafka
@@ -333,6 +363,8 @@ services:
       - ./docker/kafka/broker3/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
       # - ./docker/kafka_server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+    networks:
+      - application
 
   # -----------------------------
   # Infrastructure Visualization
@@ -353,6 +385,8 @@ services:
     command:
       - "--probe.docker"
       - "true"
+    networks:
+      - application
 
   # -----------------------------
   # elastic search
@@ -372,12 +406,13 @@ services:
       - 9300:9300
     stdin_open: true
     tty: true
-    network_mode: bridge
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "50"
+    networks:
+      - application
 
   # -----------------------------
   # kibana
@@ -396,12 +431,13 @@ services:
       - elasticsearch
     stdin_open: true
     tty: true
-    network_mode: bridge
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "50"
+    networks:
+      - application
 
   # -----------------------------
   # logstash for get collected logs with filebeat
@@ -423,12 +459,13 @@ services:
       - elasticsearch
     stdin_open: true
     tty: true
-    network_mode: bridge
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "50"
+    networks:
+      - application
 
   # -----------------------------
   # filebeat
@@ -450,7 +487,6 @@ services:
         hard: -1
     stdin_open: true
     tty: true
-    network_mode: bridge
     deploy:
       mode: global
     logging:
@@ -458,6 +494,8 @@ services:
       options:
         max-size: "10m"
         max-file: "50"
+    networks:
+      - application
 
 # secrets files
 secrets:
@@ -468,3 +506,6 @@ secrets:
 
 volumes:
   mysql-db:
+
+networks:
+  application:
