@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -91,7 +92,7 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 		return "error in get new post stored by customer", "ERROR", fmt.Errorf(fmt.Sprintf("error in get new post stored by customer %s", err.Error()))
 	}
 
-	if _, err := el.Database.Store(ctx, "blog", ps); err != nil {
+	if _, err := el.Database.Store(ctx, "blog", "_doc", strconv.Itoa(int(ps.ID)), ps); err != nil {
 		tx.Rollback()
 		return "error in store post into search engine", "ERROR", fmt.Errorf(fmt.Sprintf("error in store post into search engine %s", err.Error()))
 	}
@@ -168,12 +169,11 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 		return "we can not update your post", "ERROR", err
 	}
 
-	// FIXME fix this section
-	// _, err = el.Database.Update("blog", "_doc", strconv.Itoa(int(post.ID)), &elastic.Script{})
-	// if err != nil {
-	// 	tx.Rollback()
-	// 	return "we can not update your post", "ERROR", err
-	// }
+	_, err = el.Database.Update(ctx, "blog", "_doc", strconv.Itoa(int(post.ID)), post)
+	if err != nil {
+		tx.Rollback()
+		return "we can not update your post", "ERROR", err
+	}
 
 	tx.Commit()
 
@@ -189,7 +189,7 @@ func (b *basicBlogService) GetPost(ctx context.Context, must []*model.Query, sho
 	if err != nil {
 		return nil, "Failed To Create a Search Query", "500", fmt.Errorf("Failed To Create a Search Query: %s", err)
 	}
-	result, err := el.Database.Search("blog", query)
+	result, err := el.Database.Search(ctx, "blog", query)
 	if err != nil {
 		return nil, "Failed To Search", "500", fmt.Errorf("Failed To Search: %s", err)
 	}
