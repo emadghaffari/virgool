@@ -27,6 +27,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/emadghaffari/virgool/blog/conf"
+	"github.com/emadghaffari/virgool/blog/database/elastic"
 	"github.com/emadghaffari/virgool/blog/database/mysql"
 	"github.com/emadghaffari/virgool/blog/database/redis"
 	"github.com/emadghaffari/virgool/blog/env"
@@ -53,7 +54,7 @@ func Run() {
 
 	// Read configs
 	if err := initConfigs(); err != nil {
-		if err := logger.Log("exit");err != nil {
+		if err := logger.Log("exit"); err != nil {
 			logrus.Warn(err.Error())
 		}
 		return
@@ -66,7 +67,7 @@ func Run() {
 	// components that use it, as a dependency
 	closer, err := initJaeger()
 	if err != nil {
-		if err := logger.Log("exit");err != nil {
+		if err := logger.Log("exit"); err != nil {
 			logrus.Warn(err.Error())
 		}
 		return
@@ -75,7 +76,7 @@ func Run() {
 
 	// connect to local database
 	if err := initDatabase(); err != nil {
-		if err := logger.Log("exit");err != nil {
+		if err := logger.Log("exit"); err != nil {
 			logrus.Warn(err.Error())
 		}
 		return
@@ -83,9 +84,14 @@ func Run() {
 
 	// connect to local initRedis
 	if err := initRedis(); err != nil {
-		if err := logger.Log("exit");err != nil {
+		if err := logger.Log("exit"); err != nil {
 			logrus.Warn(err.Error())
 		}
+		return
+	}
+
+	if err := elastic.Database.Connect(&conf.GlobalConfigs, logrus.StandardLogger()); err != nil {
+		logrus.Error(err.Error())
 		return
 	}
 
@@ -102,9 +108,9 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
-	if err := logger.Log("exit", g.Run());err != nil {
-			logrus.Warn(err.Error())
-		}
+	if err := logger.Log("exit", g.Run()); err != nil {
+		logrus.Warn(err.Error())
+	}
 
 }
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
@@ -114,12 +120,12 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
 	grpcListener, err := net.Listen("tcp", conf.GlobalConfigs.GRPC.Port)
 	if err != nil {
-		if err := logger.Log("transport", "gRPC", "during", "Listen", "err", err);err != nil {
+		if err := logger.Log("transport", "gRPC", "during", "Listen", "err", err); err != nil {
 			logrus.Warn(err.Error())
 		}
 	}
 	g.Add(func() error {
-		if err := logger.Log("transport", "gRPC", "addr", conf.GlobalConfigs.GRPC.Port);err != nil {
+		if err := logger.Log("transport", "gRPC", "addr", conf.GlobalConfigs.GRPC.Port); err != nil {
 			logrus.Warn(err.Error())
 		}
 
@@ -146,12 +152,12 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	httpHandler := pkghttp.NewHTTPHandler(endpoints, map[string][]http1.ServerOption{})
 	httpListener, err := net.Listen("tcp", conf.GlobalConfigs.HTTP.Port)
 	if err != nil {
-		if err := logger.Log("transport", "HTTP", "during", "Listen", "err", err);err != nil {
+		if err := logger.Log("transport", "HTTP", "during", "Listen", "err", err); err != nil {
 			logrus.Warn(err.Error())
 		}
 	}
 	g.Add(func() error {
-		if err := logger.Log("transport", "HTTP", "addr", conf.GlobalConfigs.HTTP.Port);err != nil {
+		if err := logger.Log("transport", "HTTP", "addr", conf.GlobalConfigs.HTTP.Port); err != nil {
 			logrus.Warn(err.Error())
 		}
 		return http.Serve(httpListener, httpHandler)
@@ -184,12 +190,12 @@ func initMetricsEndpoint(g *group.Group) {
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
 	debugListener, err := net.Listen("tcp", conf.GlobalConfigs.DEBUG.Port)
 	if err != nil {
-		if err := logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err);err != nil {
+		if err := logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err); err != nil {
 			logrus.Warn(err.Error())
 		}
 	}
 	g.Add(func() error {
-		if err := logger.Log("transport", "debug/HTTP", "addr", conf.GlobalConfigs.DEBUG.Port);err != nil {
+		if err := logger.Log("transport", "debug/HTTP", "addr", conf.GlobalConfigs.DEBUG.Port); err != nil {
 			logrus.Warn(err.Error())
 		}
 		return http.Serve(debugListener, http.DefaultServeMux)
@@ -254,7 +260,7 @@ func initJaeger() (io.Closer, error) {
 		jaegercfg.ZipkinSharedRPCSpan(true),
 	)
 	if err != nil {
-		if err := logger.Log("during", "Listen", "jaeger", "err", err);err != nil {
+		if err := logger.Log("during", "Listen", "jaeger", "err", err); err != nil {
 			logrus.Warn(err.Error())
 		}
 		return nil, err
