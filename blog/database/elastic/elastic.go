@@ -53,21 +53,16 @@ func (e *elk) GetClient() *el.Client {
 }
 
 // Connect to elasticsearch service
-func (e *elk) Connect(conf *conf.GlobalConfiguration, logger el.Logger) (err error) {
+func (e *elk) Connect(conf *conf.GlobalConfiguration, logger el.Logger) error {
 	client, err := el.NewClient(
 		el.SetURL(conf.ELK.URLs...),
 		el.SetBasicAuth(conf.ELK.Username, conf.ELK.Password),
 		el.SetErrorLog(logger),
 		el.SetInfoLog(logger),
 		el.SetHealthcheck(true),
-		el.SetHealthcheckInterval(time.Duration(conf.ELK.HealthCheckTime)),
+		el.SetHealthcheckInterval(time.Second*50),
 	)
 	if err != nil {
-		return err
-	}
-
-	ps := e.client.Ping(conf.ELK.URLs[0])
-	if _, _, err = ps.Do(context.Background()); err != nil {
 		return err
 	}
 
