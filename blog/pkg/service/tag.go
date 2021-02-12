@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -24,8 +25,8 @@ func (b *basicBlogService) CreateTag(ctx context.Context, name string, token str
 		Name: name,
 	}
 
-	if err:= tx.Save(&tag).Error; err != nil{
-		return fmt.Sprintf("error in store a new tag: %s",err.Error()),"ERROR",err
+	if err := tx.Save(&tag).Error; err != nil {
+		return fmt.Sprintf("error in store a new tag: %s", err.Error()), "ERROR", err
 	}
 
 	tx.Commit()
@@ -35,12 +36,30 @@ func (b *basicBlogService) CreateTag(ctx context.Context, name string, token str
 		return "error in store tag into search engine", "ERROR", fmt.Errorf(fmt.Sprintf("error in store tag into search engine %s", err.Error()))
 	}
 
-
 	return "new tag stored successfully", "SUCCESS", nil
 }
 func (b *basicBlogService) GetTag(ctx context.Context, filter []*model.Query, token string) (tags []*model.Tag, message string, status string, err error) {
-	// TODO implement the business logic of GetTag
-	return tags, message, status, err
+	query, err := el.Database.BuildQuery(
+		el.FilterQuery(filter),
+	)
+
+	if err != nil {
+		return nil, "Failed To Create a Search Query", "500", fmt.Errorf("Failed To Create a Search Query: %s", err)
+	}
+	result, err := el.Database.Search(ctx, "tag", query)
+	if err != nil {
+		return nil, "Failed To Search", "500", fmt.Errorf("Failed To Search: %s", err)
+	}
+
+	for _, hit := range result.Hits.Hits {
+		var tag model.Tag
+		if err := json.Unmarshal(hit.Source, &tag); err != nil {
+			return tags, "Failed To Unmarshal Data", "500", fmt.Errorf("Failed To Unmarshal Data: %v", hit)
+		}
+		tags = append(tags, &tag)
+	}
+
+	return tags, "tags searched successfully", "SUCCESS", nil
 }
 func (b *basicBlogService) UpdateTag(ctx context.Context, oldName string, newName string, token string) (message string, status string, err error) {
 	// TODO implement the business logic of UpdateTag
