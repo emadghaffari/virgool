@@ -29,7 +29,6 @@ type elasticsearch interface {
 	Get(ctx context.Context, index string, docType string, id string) (*el.GetResult, error)
 	Search(ctx context.Context, index string, query el.Query) (*el.SearchResult, error)
 	Update(ctx context.Context, index string, docType string, id string, doc interface{}) (*el.UpdateResponse, error)
-	// BuildQuery(must, should, not, filter []*model.Query) (*el.BoolQuery, error)
 	BuildQuery(opts ...Option) (*el.BoolQuery, error)
 	SetClient(client *el.Client)
 	GetClient() *el.Client
