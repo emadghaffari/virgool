@@ -185,7 +185,13 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 
 // get post
 func (b *basicBlogService) GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error) {
-	query, err := el.Database.BuildQuery(must, should, not, filter)
+	query, err := el.Database.BuildQuery(
+		el.MustQuery(must),
+		el.FilterQuery(filter),
+		el.MustNotQuery(not),
+		el.FilterQuery(filter),
+	)
+
 	if err != nil {
 		return nil, "Failed To Create a Search Query", "500", fmt.Errorf("Failed To Create a Search Query: %s", err)
 	}
