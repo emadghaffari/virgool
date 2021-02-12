@@ -112,6 +112,21 @@ func (l loggingMiddleware) CreateTag(ctx context.Context, name string, token str
 			logrus.Warn(err.Error())
 		}
 	}()
+
+	var user interface{}
+	if err := model.JWT.Get(ctx, token, &user); err != nil {
+		err := l.logger.Log("user", "not", "found")
+		if err != nil {
+			logrus.Warn(err.Error())
+		}
+		return "user not found", "ERROR", err
+	}
+
+	name,err = str.RemoveSymbols(name)
+	if err != nil{
+		return "invalid name", "ERROR", err
+	}
+
 	return l.next.CreateTag(ctx, name, token)
 }
 func (l loggingMiddleware) GetTag(ctx context.Context, filter []*model.Query, token string) (tags []*model.Tag, message string, status string, err error) {
@@ -130,6 +145,26 @@ func (l loggingMiddleware) UpdateTag(ctx context.Context, oldName string, newNam
 			logrus.Warn(err.Error())
 		}
 	}()
+
+	var user interface{}
+	if err := model.JWT.Get(ctx, token, &user); err != nil {
+		err := l.logger.Log("user", "not", "found")
+		if err != nil {
+			logrus.Warn(err.Error())
+		}
+		return "user not found", "ERROR", err
+	}
+
+	oldName,err = str.RemoveSymbols(oldName)
+	if err != nil{
+		return "invalid old name", "ERROR", err
+	}
+
+	newName,err = str.RemoveSymbols(newName)
+	if err != nil{
+		return "invalid new name for tag", "ERROR", err
+	}
+
 	return l.next.UpdateTag(ctx, oldName, newName, token)
 }
 func (l loggingMiddleware) DeleteTag(ctx context.Context, name string, token string) (message string, status string, err error) {
@@ -139,6 +174,21 @@ func (l loggingMiddleware) DeleteTag(ctx context.Context, name string, token str
 			logrus.Warn(err.Error())
 		}
 	}()
+
+	var user interface{}
+	if err := model.JWT.Get(ctx, token, &user); err != nil {
+		err := l.logger.Log("user", "not", "found")
+		if err != nil {
+			logrus.Warn(err.Error())
+		}
+		return "user not found", "ERROR", err
+	}
+
+	name,err = str.RemoveSymbols(name)
+	if err != nil{
+		return "invalid name", "ERROR", err
+	}
+
 	return l.next.DeleteTag(ctx, name, token)
 }
 func (l loggingMiddleware) Upload(ctx context.Context, title string, description string, fileType string, file bytes.Buffer, token string) (message string, status string, err error) {
