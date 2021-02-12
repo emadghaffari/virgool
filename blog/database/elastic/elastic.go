@@ -10,7 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/emadghaffari/virgool/blog/conf"
-	"github.com/emadghaffari/virgool/blog/model"
 )
 
 var (
@@ -30,7 +29,8 @@ type elasticsearch interface {
 	Get(ctx context.Context, index string, docType string, id string) (*el.GetResult, error)
 	Search(ctx context.Context, index string, query el.Query) (*el.SearchResult, error)
 	Update(ctx context.Context, index string, docType string, id string, doc interface{}) (*el.UpdateResponse, error)
-	BuildQuery(must, should, not, filter []*model.Query) (*el.BoolQuery, error)
+	// BuildQuery(must, should, not, filter []*model.Query) (*el.BoolQuery, error)
+	BuildQuery(opts ...Option) (*el.BoolQuery, error)
 	SetClient(client *el.Client)
 	GetClient() *el.Client
 }
@@ -153,31 +153,12 @@ func (e *elk) Search(ctx context.Context, index string, query el.Query) (*el.Sea
 	return elk, nil
 }
 
-func (e *elk) BuildQuery(must, should, not, filter []*model.Query) (*el.BoolQuery, error) {
+func (e *elk) BuildQuery(opts ...Option) (*el.BoolQuery, error) {
+
 	search := el.NewBoolQuery()
 
-	// Create Must Query for elasticsearch
-	for _, m := range must {
-		search.Must(el.NewMatchQuery(fmt.Sprintf("%s.keyword", m.Name), m.Value))
-	}
-
-	// Create Should Query for elasticsearch
-	for _, s := range should {
-		search.Should(el.NewMatchQuery(fmt.Sprintf("%s.keyword", s.Name), s.Value))
-	}
-
-	// Create MustNot Query for elasticsearch
-	for _, n := range not {
-		search.MustNot(el.NewMatchQuery(fmt.Sprintf("%s.keyword", n.Name), n.Value))
-	}
-
-	// Create Filter Query for elasticsearch
-	for _, f := range filter {
-		search.Filter(el.NewMatchQuery(fmt.Sprintf("%s.keyword", f.Name), f.Value))
-	}
-
-	if _, err := search.Source(); err != nil {
-		panic(err)
+	for _, opt := range opts {
+		opt(search)
 	}
 
 	return search, nil
