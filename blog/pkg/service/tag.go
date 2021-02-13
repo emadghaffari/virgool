@@ -13,6 +13,8 @@ import (
 	model "github.com/emadghaffari/virgool/blog/model"
 )
 
+// CreateTag
+// create and store new tag into database and elasticsearch
 func (b *basicBlogService) CreateTag(ctx context.Context, name string, token string) (message string, status string, err error) {
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("create-tag")
