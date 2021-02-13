@@ -40,6 +40,9 @@ func (b *basicBlogService) CreateTag(ctx context.Context, name string, token str
 
 	return "new tag stored successfully", "SUCCESS", nil
 }
+
+// GetTag
+// for get a tag with filters from elastic
 func (b *basicBlogService) GetTag(ctx context.Context, filter []*model.Query, token string) (tags []*model.Tag, message string, status string, err error) {
 	query, err := el.Database.BuildQuery(
 		el.FilterQuery(filter),
