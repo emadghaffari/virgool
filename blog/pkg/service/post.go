@@ -15,12 +15,16 @@ import (
 	model "github.com/emadghaffari/virgool/blog/model"
 )
 
-// CreatePost method for create new pos
+// CreatePost method for create new post
+// with with method we create a new post and store into mysql,elastic
 func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
+
+	// start create-post tracer
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("create-post")
 	defer span.Finish()
 
+	// get user from context
 	user, ok := ctx.Value(model.User).(map[string]interface{})
 	if !ok {
 		return "user not found", "ERROR", fmt.Errorf(fmt.Sprintf("error user not found: %s", err.Error()))
@@ -85,13 +89,16 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 		return "error in append medias into post", "ERROR", fmt.Errorf(fmt.Sprintf("error in append medias into post %s", err.Error()))
 	}
 
+	// commit the transaction
 	tx.Commit()
 
+	// get post from database
 	var ps model.Post
 	if err := mysql.Database.GetDatabase().Table("posts").Preload("Media").Preload("Params").Preload("Tags").Where("slug=?", post.Slug).First(&ps).Error; err != nil {
 		return "error in get new post stored by customer", "ERROR", fmt.Errorf(fmt.Sprintf("error in get new post stored by customer %s", err.Error()))
 	}
 
+	// store post into elastic
 	if _, err := el.Database.Store(ctx, "blog", "_doc", strconv.Itoa(int(ps.ID)), ps); err != nil {
 		tx.Rollback()
 		return "error in store post into search engine", "ERROR", fmt.Errorf(fmt.Sprintf("error in store post into search engine %s", err.Error()))
@@ -101,11 +108,15 @@ func (b *basicBlogService) CreatePost(ctx context.Context, title string, slug st
 }
 
 // update a post
+// we update a post with slug
 func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug string, description string, text string, params []*model.Query, medias []uint64, Tags []uint64, Status model.StatusPost, token string) (message string, status string, err error) {
+
+	// start update-post trace
 	tracer := opentracing.GlobalTracer()
 	span := tracer.StartSpan("update-post")
 	defer span.Finish()
 
+	// get user from context
 	user, ok := ctx.Value(model.User).(map[string]interface{})
 	if !ok {
 		return "user not found", "ERROR", err
@@ -119,6 +130,7 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 		PublishedAT: time.Now(),
 	}
 
+	// get post if you are owner of post
 	err = tx.Table("posts").
 		Where("user_id = ? AND slug = ?", uint64(user["id"].(float64)), slug).
 		First(&post).Error
@@ -127,6 +139,7 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 		return "post not found", "ERROR", err
 	}
 
+	// make slice of tags
 	t := make([]*model.Tag, len(Tags))
 	for kt, vt := range Tags {
 		t[kt] = &model.Tag{
@@ -134,6 +147,7 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 		}
 	}
 
+	// make slice of params
 	p := make([]*model.Param, len(params))
 	for kp, vp := range params {
 		p[kp] = &model.Param{
@@ -141,6 +155,7 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 		}
 	}
 
+	// make slice of medias
 	m := make([]*model.Media, len(medias))
 	for km, vm := range medias {
 		m[km] = &model.Media{
@@ -157,6 +172,7 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 	post.Status = Status
 	post.Text = text
 
+	// update post with new vars
 	err = tx.Table("posts").
 		Preload("Params").
 		Preload("Media").
@@ -169,37 +185,45 @@ func (b *basicBlogService) UpdatePost(ctx context.Context, title string, slug st
 		return "we can not update your post", "ERROR", err
 	}
 
+	// update elastic with new document
 	_, err = el.Database.Update(ctx, "blog", "_doc", strconv.Itoa(int(post.ID)), post)
 	if err != nil {
 		tx.Rollback()
 		return "we can not update your post", "ERROR", err
 	}
 
+	// commit the transaction
 	tx.Commit()
 
-	message = "post updated successfully"
-	status = "SUCCESS"
-
-	return message, status, err
+	return "post updated successfully", "SUCCESS", err
 }
 
 // get post
 func (b *basicBlogService) GetPost(ctx context.Context, must []*model.Query, should []*model.Query, not []*model.Query, filter []*model.Query, token string) (posts []model.Post, message string, status string, err error) {
+
+	// start get-post trace
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("get-post")
+	defer span.Finish()
+
+	// build a elastic query with filters
 	query, err := el.Database.BuildQuery(
 		el.MustQuery(must),
 		el.FilterQuery(filter),
 		el.MustNotQuery(not),
 		el.FilterQuery(filter),
 	)
-
 	if err != nil {
 		return nil, "Failed To Create a Search Query", "500", fmt.Errorf("Failed To Create a Search Query: %s", err)
 	}
+
+	// search by query
 	result, err := el.Database.Search(ctx, "blog", query)
 	if err != nil {
 		return nil, "Failed To Search", "500", fmt.Errorf("Failed To Search: %s", err)
 	}
 
+	// loop over hits
 	for _, hit := range result.Hits.Hits {
 		var post model.Post
 		if err := json.Unmarshal(hit.Source, &post); err != nil {
@@ -214,6 +238,12 @@ func (b *basicBlogService) GetPost(ctx context.Context, must []*model.Query, sho
 // delete post
 func (b *basicBlogService) DeletePost(ctx context.Context, filter []*model.Query, token string) (message string, status string, err error) {
 
+	// start delete-post trace
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("delete-post")
+	defer span.Finish()
+
+	// loop over filters, check to delete
 	for _, id := range filter {
 		id, ok := id.Value.(string)
 		if ok {
