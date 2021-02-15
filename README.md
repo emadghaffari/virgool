@@ -11,14 +11,28 @@ for development mode we read from file
 environment="production"
 for production mode we read from file (address and token) then read data from vault
 
-# kafka
+# tools:
+ ## database:
+ - mysql:5.7
+ - phpmyadmin
+ - redis
+ - rediscommander/redis-commander:latest
+ 
+ ## tracer:
+ - jaegertracing/all-in-one:1.20
+ 
+ ## message brokers:
+ - zookeeper:3.4.13
+ - zookeeper:3.4.13
+ - wurstmeister/kafka
+ - wurstmeister/kafka
+ - wurstmeister/kafka
 
-kafka service
-
-## create topic:
-
-kafka-topics.sh --zookeeper zookeeper:2181 --topic notifications --create --partitions 3 --replication-factor 1
-
-## list topics:
-
-kafka-topics.sh --zookeeper zookeeper:2181 --list
+ ## services monitoring:
+ - weaveworks/scope:1.13.1
+ 
+ ## searching with monitoring:
+ - docker.elastic.co/elasticsearch/elasticsearch:7.7.1
+ - docker.elastic.co/kibana/kibana:7.7.1
+ - docker.elastic.co/logstash/logstash:7.7.1
+ - docker.elastic.co/beats/filebeat:7.7.1
