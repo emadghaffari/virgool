@@ -87,8 +87,49 @@ func (b *basicBlogService) GetTag(ctx context.Context, filter []*model.Query, to
 // UpdateTag
 // replace old tag name and to new name
 func (b *basicBlogService) UpdateTag(ctx context.Context, oldName string, newName string, token string) (message string, status string, err error) {
-	// TODO implement the business logic of UpdateTag
-	return message, status, err
+
+	// start get-tag tracer
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("update-tag")
+
+	defer span.Finish()
+
+	// begins a transaction
+	tx := mysql.Database.GetDatabase().Begin()
+
+	var tag model.Tag
+
+	// get tag if you are owner of tag
+	err = tx.Table("tags").
+		Where("name = ? ", oldName).
+		First(&tag).Error
+	if err != nil {
+		tx.Rollback()
+		return "tag not found", "ERROR", err
+	}
+
+	tag.Name = newName
+
+	// update tag with new vars
+	err = tx.Table("tags").
+		Where("name = ? ", oldName).
+		Select("*").
+		Updates(tag).Error
+	if err != nil {
+		tx.Rollback()
+		return "we can not update your tag", "ERROR", err
+	}
+
+	// update elastic with new document
+	_, err = el.Database.Update(ctx, "tag", "_doc", strconv.Itoa(int(tag.ID)), tag)
+	if err != nil {
+		tx.Rollback()
+		return "we can not update your tag", "ERROR", err
+	}
+
+	tx.Commit()
+
+	return "tag updated successfully", "SUCCESS", err
 }
 func (b *basicBlogService) DeleteTag(ctx context.Context, name string, token string) (message string, status string, err error) {
 
