@@ -36,3 +36,14 @@ for production mode we read from file (address and token) then read data from va
  - docker.elastic.co/kibana/kibana:7.7.1
  - docker.elastic.co/logstash/logstash:7.7.1
  - docker.elastic.co/beats/filebeat:7.7.1
+
+
+### auth:
+with the auth service you can Register, Login And Verify you users
+
+### notification
+with notif service you can send notif to users with SMS or Email
+notif service is consumer kafka topic for get notifs from other services
+
+### blog
+with blog service you can CRUD posts, tags and upload images 
