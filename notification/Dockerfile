@@ -1,7 +1,7 @@
 FROM golang:1.15.3
 
-RUN mkdir -p /go/src/github.com/emadghaffari/virgool
-WORKDIR /go/src/github.com/emadghaffari/virgool
+RUN mkdir -p /go/src/github.com/emadghaffari/virgool/notification
+WORKDIR /go/src/github.com/emadghaffari/virgool/notification
 ADD . .
 RUN go get -d -v ./...
 RUN go install -v ./...
