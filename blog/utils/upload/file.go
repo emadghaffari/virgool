@@ -14,10 +14,12 @@ import (
 	f "github.com/emadghaffari/virgool/blog/utils/file"
 )
 
+// FileStore interface
 type FileStore interface {
 	Store(fileType string, file bytes.Buffer) (string, error)
 }
 
+// DiskFileStore is struct for store new file 
 type DiskFileStore struct {
 	mutex      sync.RWMutex
 	fileFolder string
