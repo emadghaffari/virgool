@@ -32,17 +32,17 @@ func (l *DBLogger) LogMode(gormlogger.LogLevel) gormlogger.Interface {
 
 // Info func
 func (l *DBLogger) Info(ctx context.Context, s string, args ...interface{}) {
-	log.WithContext(ctx).Infof(s, args)
+	log.WithContext(ctx).Infof(s, args...)
 }
 
 // Warn func
 func (l *DBLogger) Warn(ctx context.Context, s string, args ...interface{}) {
-	log.WithContext(ctx).Warnf(s, args)
+	log.WithContext(ctx).Warnf(s, args...)
 }
 
 // Error func
 func (l *DBLogger) Error(ctx context.Context, s string, args ...interface{}) {
-	log.WithContext(ctx).Errorf(s, args)
+	log.WithContext(ctx).Errorf(s, args...)
 }
 
 // Trace func
