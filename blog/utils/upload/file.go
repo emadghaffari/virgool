@@ -7,8 +7,11 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 
+	"github.com/emadghaffari/virgool/blog/conf"
 	"github.com/emadghaffari/virgool/blog/model"
+	f "github.com/emadghaffari/virgool/blog/utils/file"
 )
 
 type FileStore interface {
@@ -21,12 +24,29 @@ type DiskFileStore struct {
 	File       *model.Media
 }
 
+// NewDiskFileStore is path to file should store
+// example: /path
 func NewDiskFileStore(path string) *DiskFileStore {
+	if string(path[0]) != "/" {
+		path = "/" + path 
+	}
+
+	path = conf.GlobalConfigs.General.Upload+path
+
+	// check base directory exists for upload file
+	if !f.Exists(path,true){
+		err := f.CreateDir(path)
+		if err != nil {
+			logrus.Warn(err)
+		}
+	}
+
 	return &DiskFileStore{
 		fileFolder: path,
 	}
 }
 
+// Store method, store a file into path you want
 func (i *DiskFileStore) Store(fileType string, file bytes.Buffer) (string, error) {
 	fileID, err := uuid.NewUUID()
 	if err != nil {
