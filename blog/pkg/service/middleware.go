@@ -202,14 +202,13 @@ func (l loggingMiddleware) Upload(ctx context.Context, title string, description
 	}()
 
 
-	if !f.Exists(conf.GlobalConfigs.General.UploadPath,true){
-		err := f.CreateDir(conf.GlobalConfigs.General.UploadPath)
+	// check base directory exists for upload file
+	if !f.Exists(conf.GlobalConfigs.General.Upload,true){
+		err := f.CreateDir(conf.GlobalConfigs.General.Upload)
 		if err != nil {
 			l.logger.Log(err.Error())
 		}
 	}
-
-
 
 	return l.next.Upload(ctx, title, description, fileType, file, token)
 }

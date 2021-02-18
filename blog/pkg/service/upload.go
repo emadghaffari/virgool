@@ -3,14 +3,14 @@ package service
 import (
 	"bytes"
 	"context"
+	"time"
 
-	"github.com/emadghaffari/virgool/blog/conf"
 	"github.com/emadghaffari/virgool/blog/utils/upload"
 )
 
 func (b *basicBlogService) Upload(ctx context.Context, title string, description string, fileType string, file bytes.Buffer, token string) (message string, status string, err error) {
 
-	disk := upload.NewDiskFileStore(conf.GlobalConfigs.General.UploadPath)
+	disk := upload.NewDiskFileStore(time.Now().UTC().String())
 	disk.File.Title = &title
 	disk.File.Description = &description
 
