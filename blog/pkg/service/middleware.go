@@ -8,7 +8,9 @@ import (
 	log "github.com/go-kit/kit/log"
 	"github.com/sirupsen/logrus"
 
+	"github.com/emadghaffari/virgool/blog/conf"
 	model "github.com/emadghaffari/virgool/blog/model"
+	f "github.com/emadghaffari/virgool/blog/utils/file"
 	"github.com/emadghaffari/virgool/blog/utils/str"
 )
 
@@ -198,5 +200,16 @@ func (l loggingMiddleware) Upload(ctx context.Context, title string, description
 			logrus.Warn(err.Error())
 		}
 	}()
+
+
+	if !f.Exists(conf.GlobalConfigs.General.UploadPath,true){
+		err := f.CreateDir(conf.GlobalConfigs.General.UploadPath)
+		if err != nil {
+			l.logger.Log(err.Error())
+		}
+	}
+
+
+
 	return l.next.Upload(ctx, title, description, fileType, file, token)
 }

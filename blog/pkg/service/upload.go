@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 
+	"github.com/emadghaffari/virgool/blog/conf"
 	"github.com/emadghaffari/virgool/blog/utils/upload"
 )
 
 func (b *basicBlogService) Upload(ctx context.Context, title string, description string, fileType string, file bytes.Buffer, token string) (message string, status string, err error) {
 
-	disk := upload.NewDiskFileStore("public/upload")
+	disk := upload.NewDiskFileStore(conf.GlobalConfigs.General.UploadPath)
 	disk.File.Title = &title
 	disk.File.Description = &description
 
