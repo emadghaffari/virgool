@@ -8,6 +8,7 @@ var GlobalConfigs GlobalConfiguration
 // GlobalConfiguration holds all the global configuration for gocommerce
 type GlobalConfiguration struct {
 	Environment string `yaml:"environment"`
+	General General
 	GRPC        struct {
 		Host     string `yaml:"grpc.host"`
 		Port     string `yaml:"grpc.port"`
@@ -117,4 +118,10 @@ type ELK struct {
 	Username        string        `yaml:"elk.username"`
 	Password        string        `yaml:"elk.password"`
 	HealthCheckTime time.Duration `yaml:"elk.health_check"`
+}
+
+
+// General struct
+type General struct{
+	UploadPath string `yaml:general.upload`
 }
