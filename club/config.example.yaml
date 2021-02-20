@@ -2,7 +2,7 @@ environment: "development"
 # environment: "production"
 
 service:
-  name: "notification"
+  name: "club"
   mincl: 1000
   maxcl: 9999
   redis:
