@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
+
 	endpoint "github.com/emadghaffari/virgool/club/pkg/endpoint"
 	http1 "github.com/go-kit/kit/transport/http"
-	"net/http"
 )
 
 // makeGetHandler creates the handler logic

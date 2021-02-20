@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"context"
+
 	service "github.com/emadghaffari/virgool/club/pkg/service"
 	endpoint "github.com/go-kit/kit/endpoint"
 )
@@ -14,8 +15,8 @@ type GetRequest struct {
 
 // GetResponse collects the response parameters for the Get method.
 type GetResponse struct {
-	Result int   `json:"result"`
-	Err    error `json:"err"`
+	Result string `json:"result"`
+	Err    error  `json:"err"`
 }
 
 // MakeGetEndpoint returns an endpoint that invokes Get on the service.
@@ -43,7 +44,7 @@ type Failure interface {
 }
 
 // Get implements Service. Primarily useful in a client.
-func (e Endpoints) Get(ctx context.Context, id string, token string) (result int, err error) {
+func (e Endpoints) Get(ctx context.Context, id string, token string) (result string, err error) {
 	request := GetRequest{
 		Id:    id,
 		Token: token,
