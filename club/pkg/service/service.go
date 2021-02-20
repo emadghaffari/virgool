@@ -5,12 +5,12 @@ import "context"
 // ClubService describes the service.
 type ClubService interface {
 	// Add your methods here
-	Get(ctx context.Context, id string, token string) (result int, err error)
+	Get(ctx context.Context, id string, token string) (result string, err error)
 }
 
 type basicClubService struct{}
 
-func (b *basicClubService) Get(ctx context.Context, id string, token string) (result int, err error) {
+func (b *basicClubService) Get(ctx context.Context, id string, token string) (result string, err error) {
 	// TODO implement the business logic of Get
 	return result, err
 }

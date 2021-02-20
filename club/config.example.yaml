@@ -1,0 +1,55 @@
+environment: "development"
+# environment: "production"
+
+service:
+  name: "club"
+  mincl: 1000
+  maxcl: 9999
+
+jaeger:
+  hostPort: "jaeger:6831"
+  logSpans: true
+
+grpc:
+  host: "localhost"
+  port: ":8082"
+  endpoint: ":8083"
+
+http:
+  host: "localhost"
+  port: ":8080"
+  endpoint: ":8081"
+
+debug:
+  host: "localhost"
+  port: ":8084"
+  endpoint: ":8085"
+
+vault:
+  address: "http://vault:8200"
+  token: "s.9JFm7dyhXVIagWhPEUSiYTAN"
+  configuration: "virgool/notification"
+
+multiInstanceMode: false
+
+log:
+  disableColors: false
+  quoteEmptyFields: false
+
+kafka:
+  consumer: true
+  producer: false
+  brokers:
+    - "kafka1:9092"
+    - "kafka2:9092"
+    - "kafka3:9092"
+  version: "v1"
+  group: "interval-group"
+  assignor: "range"
+  oldest: true
+  verbose: false
+  topics:
+    notif: "club"
+  username: ""
+  password: ""
+  auth: false

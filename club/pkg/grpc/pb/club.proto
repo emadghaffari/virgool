@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+
+
+//The Club service definition.
+service Club {
+ rpc Get (GetRequest) returns (GetReply);
+}
+
+message GetRequest {}
+
+message GetReply {}
+
