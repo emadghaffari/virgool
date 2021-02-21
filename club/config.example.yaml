@@ -30,6 +30,15 @@ vault:
   token: "s.9JFm7dyhXVIagWhPEUSiYTAN"
   configuration: "virgool/notification"
 
+mysql:
+  username: "root"
+  password: "password"
+  host: "db"
+  schema: "virgool_club"
+  driver: "mysql"
+  automigrate: true
+  logger: true
+
 multiInstanceMode: false
 
 log:
