@@ -21,12 +21,25 @@ type GlobalConfiguration struct {
 		Port     string `yaml:"debug.port"`
 		Endpoint string `yaml:"debug.endpoint"`
 	}
+	MYSQL             DBConfiguration
 	Vault             VaultConfiguration
 	MultiInstanceMode bool `yaml:"multiInstanceMode"`
 	Log               LoggingConfig
 	Service           Service
 	Jaeger            Jaeger
 	Kafka             Kafka
+}
+
+// DBConfiguration struct
+type DBConfiguration struct {
+	Username    string `yaml:"mysql.username"`
+	Password    string `yaml:"mysql.password"`
+	Host        string `yaml:"mysql.host"`
+	Schema      string `yaml:"mysql.schema"`
+	Driver      string `yaml:"mysql.driver"`
+	Automigrate bool   `yaml:"mysql.automigrate"`
+	Logger      bool   `yaml:"mysql.logger"`
+	Namespace   string
 }
 
 // VaultConfiguration struct
@@ -44,7 +57,6 @@ type LoggingConfig struct {
 // Service details
 type Service struct {
 	Name string `yaml:"service.name"`
-
 }
 
 // Jaeger tracer

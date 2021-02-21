@@ -1,7 +1,6 @@
 package service
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"net"
@@ -36,20 +35,7 @@ import (
 var tracer opentracinggo.Tracer
 var logger log.Logger
 
-// Define our flags. Your service probably won't need to bind listeners for
-// all* supported transports, but we do it here for demonstration purposes.
-var fs = flag.NewFlagSet("club", flag.ExitOnError)
-var debugAddr = fs.String("debug.addr", ":8080", "Debug and metrics listen address")
-var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
-var grpcAddr = fs.String("grpc-addr", ":8082", "gRPC listen address")
-var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
-var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
-var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
-var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
-var zipkinURL = fs.String("zipkin-url", "", "Enable Zipkin tracing via a collector URL e.g. http://localhost:9411/api/v1/spans")
-var lightstepToken = fs.String("lightstep-token", "", "Enable LightStep tracing via a LightStep access token")
-var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an Appdash server host:port")
-
+// Run func
 func Run() {
 
 	// Read configs
@@ -69,8 +55,6 @@ func Run() {
 
 	//  Determine which tracer to use. We'll pass the tracer to all the
 	// components that use it, as a dependency
-	//  Determine which tracer to use. We'll pass the tracer to all the
-	// components that use it, as a dependency
 	closer, err := initJaeger()
 	if err != nil {
 		logger.Log("exit")
@@ -82,8 +66,6 @@ func Run() {
 	logger = log.NewLogfmtLogger(os.Stderr)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
-
-	
 
 	svc := service.New(getServiceMiddleware(logger))
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
@@ -98,12 +80,12 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// Add your GRPC options here
 
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
-	grpcListener, err := net.Listen("tcp", *grpcAddr)
+	grpcListener, err := net.Listen("tcp", conf.GlobalConfigs.GRPC.Port)
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "gRPC", "addr", *grpcAddr)
+		logger.Log("transport", "gRPC", "addr", conf.GlobalConfigs.GRPC.Port)
 		baseServer := grpc1.NewServer()
 		pb.RegisterClubServer(baseServer, grpcServer)
 		return baseServer.Serve(grpcListener)
@@ -112,6 +94,7 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	})
 
 }
+
 // initHttpHandler func
 func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	httpHandler := pkghttp.NewHTTPHandler(endpoints, map[string][]http1.ServerOption{})
@@ -126,7 +109,6 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 		httpListener.Close()
 	})
 }
-
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
@@ -144,12 +126,12 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 }
 func initMetricsEndpoint(g *group.Group) {
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
-	debugListener, err := net.Listen("tcp", *debugAddr)
+	debugListener, err := net.Listen("tcp", conf.GlobalConfigs.DEBUG.Port)
 	if err != nil {
 		logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "debug/HTTP", "addr", *debugAddr)
+		logger.Log("transport", "debug/HTTP", "addr", conf.GlobalConfigs.DEBUG.Port)
 		return http.Serve(debugListener, http.DefaultServeMux)
 	}, func(error) {
 		debugListener.Close()
@@ -170,7 +152,6 @@ func initCancelInterrupt(g *group.Group) {
 		close(cancelInterrupt)
 	})
 }
-
 
 func initConfigs() error {
 	// Current working directory
