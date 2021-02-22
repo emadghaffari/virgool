@@ -1,7 +1,15 @@
 package main
 
-import service "github.com/emadghaffari/virgool/club/cmd/service"
+import (
+	"fmt"
+	"os"
+
+	"github.com/emadghaffari/virgool/club/cmd/cmd"
+)
 
 func main() {
-	service.Run()
+	if err := cmd.RootCmd().Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to run command: %v\n", err)
+		os.Exit(1)
+	}
 }
