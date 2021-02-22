@@ -26,6 +26,8 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/emadghaffari/virgool/club/conf"
+	"github.com/emadghaffari/virgool/club/database/mysql"
+	"github.com/emadghaffari/virgool/club/database/redis"
 	"github.com/emadghaffari/virgool/club/env"
 	endpoint "github.com/emadghaffari/virgool/club/pkg/endpoint"
 	grpc "github.com/emadghaffari/virgool/club/pkg/grpc"
@@ -52,6 +54,23 @@ func Run() {
 	// connect to kafka
 	if err := initKafka(); err != nil {
 		logger.Log("exit")
+		return
+	}
+
+	// connect to local database
+	if err := initDatabase(); err != nil {
+		if err := logger.Log("exit"); err != nil {
+			logrus.Warn(err.Error())
+		}
+		return
+	}
+
+
+	// connect to local initRedis
+	if err := initRedis(); err != nil {
+		if err := logger.Log("exit"); err != nil {
+			logrus.Warn(err.Error())
+		}
 		return
 	}
 
@@ -173,6 +192,15 @@ func initConfigs() error {
 	// read from file
 	return env.LoadGlobalConfiguration(dir + "/config.yaml")
 }
+
+func initDatabase() error {
+	return mysql.Database.Connect(&conf.GlobalConfigs, logrus.New())
+}
+
+func initRedis() error {
+	return redis.Database.Connect(&conf.GlobalConfigs)
+}
+
 
 func initJaeger() (io.Closer, error) {
 	// Sample configuration for testing. Use constant sampling to sample every trace
