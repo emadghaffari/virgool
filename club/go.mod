@@ -9,6 +9,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-redis/redis/v8 v8.6.0
 	github.com/golang/protobuf v1.4.3
+	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/oklog/oklog v0.3.2
