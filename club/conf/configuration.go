@@ -21,6 +21,7 @@ type GlobalConfiguration struct {
 		Port     string `yaml:"debug.port"`
 		Endpoint string `yaml:"debug.endpoint"`
 	}
+	Redis             RedisConfiguration
 	MYSQL             DBConfiguration
 	Vault             VaultConfiguration
 	MultiInstanceMode bool `yaml:"multiInstanceMode"`
@@ -28,6 +29,7 @@ type GlobalConfiguration struct {
 	Service           Service
 	Jaeger            Jaeger
 	Kafka             Kafka
+	JWT               JWT
 }
 
 // DBConfiguration struct
@@ -40,6 +42,15 @@ type DBConfiguration struct {
 	Automigrate bool   `yaml:"mysql.automigrate"`
 	Logger      bool   `yaml:"mysql.logger"`
 	Namespace   string
+}
+
+// RedisConfiguration struct
+type RedisConfiguration struct {
+	Username string `yaml:"redis.username"`
+	Password string `yaml:"redis.password"`
+	DB       int    `yaml:"redis.db"`
+	Host     string `yaml:"redis.host"`
+	Logger   bool   `yaml:"redis.logger"`
 }
 
 // VaultConfiguration struct
@@ -79,6 +90,12 @@ type Kafka struct {
 	Auth     bool     `yaml:"kafka.auth"`
 	Consumer bool     `yaml:"kafka.consumer"`
 	Producer bool     `yaml:"kafka.producer"`
+}
+
+// JWT struct
+type JWT struct {
+	RSecret string `yaml:"jwt.rSecret"`
+	Secret  string `yaml:"jwt.secret"`
 }
 
 // Topic struct
