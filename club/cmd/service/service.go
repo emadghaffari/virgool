@@ -12,6 +12,7 @@ import (
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	http1 "github.com/go-kit/kit/transport/http"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	group "github.com/oklog/oklog/pkg/group"
 	"github.com/opentracing/opentracing-go"
 	opentracinggo "github.com/opentracing/opentracing-go"
@@ -22,6 +23,7 @@ import (
 	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-lib/metrics"
 	grpc1 "google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/emadghaffari/virgool/club/conf"
 	"github.com/emadghaffari/virgool/club/env"
@@ -86,7 +88,16 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	}
 	g.Add(func() error {
 		logger.Log("transport", "gRPC", "addr", conf.GlobalConfigs.GRPC.Port)
-		baseServer := grpc1.NewServer()
+		// UnaryInterceptor and OpenTracingServerInterceptor for tracer
+		baseServer := grpc1.NewServer(
+			grpc1.UnaryInterceptor(
+				otgrpc.OpenTracingServerInterceptor(tracer, otgrpc.LogPayloads()),
+			),
+		)
+
+		// reflection for evans
+		reflection.Register(baseServer)
+
 		pb.RegisterClubServer(baseServer, grpcServer)
 		return baseServer.Serve(grpcListener)
 	}, func(error) {
