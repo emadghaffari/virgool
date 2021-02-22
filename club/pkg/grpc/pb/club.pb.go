@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.25.0
 // 	protoc        v3.14.0
-// source: club/pkg/grpc/pb/club.proto
+// source: club.proto
 
 package pb
 
@@ -33,12 +33,15 @@ type GetRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Id    string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Token string `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
 }
 
 func (x *GetRequest) Reset() {
 	*x = GetRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_club_pkg_grpc_pb_club_proto_msgTypes[0]
+		mi := &file_club_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -51,7 +54,7 @@ func (x *GetRequest) String() string {
 func (*GetRequest) ProtoMessage() {}
 
 func (x *GetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_club_pkg_grpc_pb_club_proto_msgTypes[0]
+	mi := &file_club_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64,19 +67,37 @@ func (x *GetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRequest.ProtoReflect.Descriptor instead.
 func (*GetRequest) Descriptor() ([]byte, []int) {
-	return file_club_pkg_grpc_pb_club_proto_rawDescGZIP(), []int{0}
+	return file_club_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GetRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GetRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
 }
 
 type GetReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	Status  string `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Result  string `protobuf:"bytes,3,opt,name=result,proto3" json:"result,omitempty"`
 }
 
 func (x *GetReply) Reset() {
 	*x = GetReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_club_pkg_grpc_pb_club_proto_msgTypes[1]
+		mi := &file_club_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -89,7 +110,7 @@ func (x *GetReply) String() string {
 func (*GetReply) ProtoMessage() {}
 
 func (x *GetReply) ProtoReflect() protoreflect.Message {
-	mi := &file_club_pkg_grpc_pb_club_proto_msgTypes[1]
+	mi := &file_club_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -102,39 +123,66 @@ func (x *GetReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetReply.ProtoReflect.Descriptor instead.
 func (*GetReply) Descriptor() ([]byte, []int) {
-	return file_club_pkg_grpc_pb_club_proto_rawDescGZIP(), []int{1}
+	return file_club_proto_rawDescGZIP(), []int{1}
 }
 
-var File_club_pkg_grpc_pb_club_proto protoreflect.FileDescriptor
+func (x *GetReply) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
 
-var file_club_pkg_grpc_pb_club_proto_rawDesc = []byte{
-	0x0a, 0x1b, 0x63, 0x6c, 0x75, 0x62, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f,
-	0x70, 0x62, 0x2f, 0x63, 0x6c, 0x75, 0x62, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x02, 0x70,
-	0x62, 0x22, 0x0c, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x22,
-	0x0a, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x32, 0x2b, 0x0a, 0x04, 0x43,
-	0x6c, 0x75, 0x62, 0x12, 0x23, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x70, 0x62, 0x2e,
-	0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0c, 0x2e, 0x70, 0x62, 0x2e,
-	0x47, 0x65, 0x74, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+func (x *GetReply) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *GetReply) GetResult() string {
+	if x != nil {
+		return x.Result
+	}
+	return ""
+}
+
+var File_club_proto protoreflect.FileDescriptor
+
+var file_club_proto_rawDesc = []byte{
+	0x0a, 0x0a, 0x63, 0x6c, 0x75, 0x62, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x02, 0x70, 0x62,
+	0x22, 0x32, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x14,
+	0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74,
+	0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x54, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x52, 0x65, 0x70, 0x6c, 0x79,
+	0x12, 0x18, 0x0a, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x07, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x32, 0x2b, 0x0a, 0x04, 0x43, 0x6c,
+	0x75, 0x62, 0x12, 0x23, 0x0a, 0x03, 0x47, 0x65, 0x74, 0x12, 0x0e, 0x2e, 0x70, 0x62, 0x2e, 0x47,
+	0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x0c, 0x2e, 0x70, 0x62, 0x2e, 0x47,
+	0x65, 0x74, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_club_pkg_grpc_pb_club_proto_rawDescOnce sync.Once
-	file_club_pkg_grpc_pb_club_proto_rawDescData = file_club_pkg_grpc_pb_club_proto_rawDesc
+	file_club_proto_rawDescOnce sync.Once
+	file_club_proto_rawDescData = file_club_proto_rawDesc
 )
 
-func file_club_pkg_grpc_pb_club_proto_rawDescGZIP() []byte {
-	file_club_pkg_grpc_pb_club_proto_rawDescOnce.Do(func() {
-		file_club_pkg_grpc_pb_club_proto_rawDescData = protoimpl.X.CompressGZIP(file_club_pkg_grpc_pb_club_proto_rawDescData)
+func file_club_proto_rawDescGZIP() []byte {
+	file_club_proto_rawDescOnce.Do(func() {
+		file_club_proto_rawDescData = protoimpl.X.CompressGZIP(file_club_proto_rawDescData)
 	})
-	return file_club_pkg_grpc_pb_club_proto_rawDescData
+	return file_club_proto_rawDescData
 }
 
-var file_club_pkg_grpc_pb_club_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_club_pkg_grpc_pb_club_proto_goTypes = []interface{}{
+var file_club_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_club_proto_goTypes = []interface{}{
 	(*GetRequest)(nil), // 0: pb.GetRequest
 	(*GetReply)(nil),   // 1: pb.GetReply
 }
-var file_club_pkg_grpc_pb_club_proto_depIdxs = []int32{
+var file_club_proto_depIdxs = []int32{
 	0, // 0: pb.Club.Get:input_type -> pb.GetRequest
 	1, // 1: pb.Club.Get:output_type -> pb.GetReply
 	1, // [1:2] is the sub-list for method output_type
@@ -144,13 +192,13 @@ var file_club_pkg_grpc_pb_club_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_club_pkg_grpc_pb_club_proto_init() }
-func file_club_pkg_grpc_pb_club_proto_init() {
-	if File_club_pkg_grpc_pb_club_proto != nil {
+func init() { file_club_proto_init() }
+func file_club_proto_init() {
+	if File_club_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_club_pkg_grpc_pb_club_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_club_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetRequest); i {
 			case 0:
 				return &v.state
@@ -162,7 +210,7 @@ func file_club_pkg_grpc_pb_club_proto_init() {
 				return nil
 			}
 		}
-		file_club_pkg_grpc_pb_club_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_club_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetReply); i {
 			case 0:
 				return &v.state
@@ -179,20 +227,20 @@ func file_club_pkg_grpc_pb_club_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_club_pkg_grpc_pb_club_proto_rawDesc,
+			RawDescriptor: file_club_proto_rawDesc,
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_club_pkg_grpc_pb_club_proto_goTypes,
-		DependencyIndexes: file_club_pkg_grpc_pb_club_proto_depIdxs,
-		MessageInfos:      file_club_pkg_grpc_pb_club_proto_msgTypes,
+		GoTypes:           file_club_proto_goTypes,
+		DependencyIndexes: file_club_proto_depIdxs,
+		MessageInfos:      file_club_proto_msgTypes,
 	}.Build()
-	File_club_pkg_grpc_pb_club_proto = out.File
-	file_club_pkg_grpc_pb_club_proto_rawDesc = nil
-	file_club_pkg_grpc_pb_club_proto_goTypes = nil
-	file_club_pkg_grpc_pb_club_proto_depIdxs = nil
+	File_club_proto = out.File
+	file_club_proto_rawDesc = nil
+	file_club_proto_goTypes = nil
+	file_club_proto_depIdxs = nil
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -272,5 +320,5 @@ var _Club_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "club/pkg/grpc/pb/club.proto",
+	Metadata: "club.proto",
 }

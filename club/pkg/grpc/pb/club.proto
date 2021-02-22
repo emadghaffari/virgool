@@ -9,7 +9,15 @@ service Club {
  rpc Get (GetRequest) returns (GetReply);
 }
 
-message GetRequest {}
+message GetRequest {
+    string id = 1;
+    string token = 2;
+}
 
-message GetReply {}
+message GetReply {
+    string message = 1;
+    string status  = 2;
+    string result = 3;
+
+}
 
