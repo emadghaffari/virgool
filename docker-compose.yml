@@ -5,14 +5,13 @@ services:
   # -----------------------------
   auth:
     build:
-      context: .
-      dockerfile: auth/Dockerfile
+      context: ./auth
     restart: always
     volumes:
       - .:/go/src/github.com/emadghaffari/virgool
     depends_on:
       - db
-      - vault
+      # - vault
     ports:
       - 8800:8081
       - 8801:8082
@@ -24,14 +23,13 @@ services:
   # -----------------------------
   notification:
     build:
-      context: .
-      dockerfile: notification/Dockerfile
+      context: ./notification
     restart: always
     volumes:
       - .:/go/src/github.com/emadghaffari/virgool
     depends_on:
       - db
-      - vault
+      # - vault
     ports:
       - 8900:8081
       - 8901:8082
@@ -43,17 +41,34 @@ services:
   # -----------------------------
   blog:
     build:
-      context: .
-      dockerfile: blog/Dockerfile
+      context: ./blog
     restart: always
     volumes:
       - .:/go/src/github.com/emadghaffari/virgool
     depends_on:
       - db
-      - vault
+      # - vault
     ports:
       - 9000:8081
       - 9001:8082
+    networks:
+      - application
+
+  # -----------------------------
+  # club service - CRUD [comments, tags, posts]
+  # -----------------------------
+  club:
+    build:
+      context: ./club
+    restart: always
+    volumes:
+      - ./club:/go/src/github.com/emadghaffari/virgool/club
+    depends_on:
+      - db
+      # - vault
+    ports:
+      - 9100:8081
+      - 9101:8082
     networks:
       - application
 

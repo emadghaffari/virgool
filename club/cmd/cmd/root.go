@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/emadghaffari/virgool/blog/cmd/service"
+	"github.com/emadghaffari/virgool/club/cmd/service"
 )
 
 var configFile = ""
