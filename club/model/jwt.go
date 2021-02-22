@@ -7,8 +7,8 @@ import (
 	jjwt "github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
 
-	"github.com/emadghaffari/virgool/blog/conf"
-	"github.com/emadghaffari/virgool/blog/database/redis"
+	"github.com/emadghaffari/virgool/club/conf"
+	"github.com/emadghaffari/virgool/club/database/redis"
 )
 
 var (
@@ -24,7 +24,7 @@ type wt struct{}
 
 // Get, for get values from jwt token
 func (j *wt) Get(ctx context.Context, token string, response interface{}) error {
-	uuid,err := j.verify(token)
+	uuid, err := j.verify(token)
 	if err != nil {
 		return err
 	}

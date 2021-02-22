@@ -8,8 +8,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
-	"github.com/emadghaffari/virgool/notification/conf"
-	"github.com/emadghaffari/virgool/notification/database/vault"
+	"github.com/emadghaffari/virgool/club/conf"
+	"github.com/emadghaffari/virgool/club/database/vault"
 )
 
 // LoadGlobalConfiguration returns configs
