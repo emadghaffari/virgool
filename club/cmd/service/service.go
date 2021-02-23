@@ -65,7 +65,6 @@ func Run() {
 		return
 	}
 
-
 	// connect to local initRedis
 	if err := initRedis(); err != nil {
 		if err := logger.Log("exit"); err != nil {
@@ -200,7 +199,6 @@ func initDatabase() error {
 func initRedis() error {
 	return redis.Database.Connect(&conf.GlobalConfigs)
 }
-
 
 func initJaeger() (io.Closer, error) {
 	// Sample configuration for testing. Use constant sampling to sample every trace
