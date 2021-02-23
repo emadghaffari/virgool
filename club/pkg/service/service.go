@@ -1,11 +1,16 @@
 package service
 
-import "context"
+import (
+	"context"
+
+	"github.com/emadghaffari/virgool/club/model"
+)
 
 // ClubService describes the service.
 type ClubService interface {
 	// Add your methods here
 	Get(ctx context.Context, id string, token string) (result string, err error)
+	Index(ctx context.Context, from, size int32, filter model.Query, token string) (results []model.Point, err error)
 }
 
 type basicClubService struct{}
@@ -27,4 +32,9 @@ func New(middleware []Middleware) ClubService {
 		svc = m(svc)
 	}
 	return svc
+}
+
+func (b *basicClubService) Index(ctx context.Context, from int32, size int32, filter model.Query, token string) (results []model.Point, err error) {
+	// TODO implement the business logic of Index
+	return results, err
 }

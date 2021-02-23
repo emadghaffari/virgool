@@ -12,5 +12,6 @@ import (
 func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]http.ServerOption) http1.Handler {
 	m := http1.NewServeMux()
 	makeGetHandler(m, endpoints, options["Get"])
+	makeIndexHandler(m, endpoints, options["Index"])
 	return m
 }
