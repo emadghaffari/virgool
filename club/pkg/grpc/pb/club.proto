@@ -3,21 +3,43 @@ syntax = "proto3";
 package pb;
 
 
+message Query {
+ string key   = 1;
+ string value = 2;
+}
+
 
 //The Club service definition.
 service Club {
- rpc Get (GetRequest) returns (GetReply);
+ rpc Get   (GetRequest  ) returns (GetReply  );
+ rpc Index (IndexRequest) returns (IndexReply);
 }
 
 message GetRequest {
-    string id = 1;
-    string token = 2;
+ string token = 1;
 }
 
 message GetReply {
-    string message = 1;
-    string status  = 2;
-    string result = 3;
+ string message = 1;
+ string status  = 2;
+ string result  = 3;
+}
 
+message IndexRequest {
+          int32  from   = 1; // from 20
+          int32  size   = 2; // take 30
+ repeated Query  filter = 4; // filter
+          string token  = 5;
+}
+
+message IndexReply {
+ repeated Item   items    = 1;
+          string message = 2;
+          string status  = 3;
+}
+
+message Item {
+ uint64 user  = 1;
+ uint64 point = 2;
 }
 

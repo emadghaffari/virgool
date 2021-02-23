@@ -11,6 +11,9 @@ for development mode we read from file
 environment="production"
 for production mode we read from file (address and token) then read data from vault
 
+###
+change the config.example.yaml to config.yaml
+
 # tools:
  ## database:
  - mysql:5.7

@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+
 	endpoint "github.com/emadghaffari/virgool/club/pkg/endpoint"
 	pb "github.com/emadghaffari/virgool/club/pkg/grpc/pb"
 	grpc "github.com/go-kit/kit/transport/grpc"
@@ -33,4 +34,35 @@ func (g *grpcServer) Get(ctx context1.Context, req *pb.GetRequest) (*pb.GetReply
 		return nil, err
 	}
 	return rep.(*pb.GetReply), nil
+}
+
+// // makeIndexHandler creates the handler logic
+// func makeIndexHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+// 	return grpc.NewServer(endpoints.IndexEndpoint, decodeIndexRequest, encodeIndexResponse, options...)
+// }
+
+// makeIndexHandler creates the handler logic
+func makeIndexHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.IndexEndpoint, decodeIndexRequest, encodeIndexResponse, options...)
+}
+
+// decodeIndexResponse is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain Index request.
+// TODO implement the decoder
+func decodeIndexRequest(_ context.Context, r interface{}) (interface{}, error) {
+	return nil, errors.New("'Club' Decoder is not impelemented")
+}
+
+// encodeIndexResponse is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+// TODO implement the encoder
+func encodeIndexResponse(_ context.Context, r interface{}) (interface{}, error) {
+	return nil, errors.New("'Club' Encoder is not impelemented")
+}
+func (g *grpcServer) Index(ctx context1.Context, req *pb.IndexRequest) (*pb.IndexReply, error) {
+	_, rep, err := g.index.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.IndexReply), nil
 }

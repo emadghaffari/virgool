@@ -2,15 +2,18 @@
 package service
 
 import (
-	endpoint "github.com/emadghaffari/virgool/club/pkg/endpoint"
-	http1 "github.com/emadghaffari/virgool/club/pkg/http"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
+	prometheus "github.com/go-kit/kit/metrics/prometheus"
 	opentracing "github.com/go-kit/kit/tracing/opentracing"
 	grpc "github.com/go-kit/kit/transport/grpc"
 	http "github.com/go-kit/kit/transport/http"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
+
+	endpoint "github.com/emadghaffari/virgool/club/pkg/endpoint"
+	http1 "github.com/emadghaffari/virgool/club/pkg/http"
+	service "github.com/emadghaffari/virgool/club/pkg/service"
 )
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
@@ -20,15 +23,28 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	return g
 }
 func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]http.ServerOption {
-	options := map[string][]http.ServerOption{"Get": {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Get", logger))}}
+	options := map[string][]http.ServerOption{
+		"Get":   {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Get", logger))},
+		"Index": {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Index", logger))},
+	}
 	return options
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
-	options := map[string][]grpc.ServerOption{"Get": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Get", logger))}}
+	options := map[string][]grpc.ServerOption{
+		"Get":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Get", logger))},
+		"Index": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Index", logger))},
+	}
 	return options
 }
+func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
+	mw["Get"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Get")), endpoint.InstrumentingMiddleware(duration.With("method", "Get"))}
+	mw["Index"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Index")), endpoint.InstrumentingMiddleware(duration.With("method", "Index"))}
+}
+func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
+	return append(mw, service.LoggingMiddleware(logger))
+}
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"Get"}
+	methods := []string{"Get", "Index"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}
