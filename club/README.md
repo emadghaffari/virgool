@@ -1,10 +1,10 @@
-# notification
+# club
 
-with this service we manage clug
+with this service we manage users point
 
-### clug:
- - SET = async
- - GET = async, sync
+### club:
+ - GET = get user point
+ - INDEX = get all users points
 
 ### configs:
  - you need change config.example.yaml to config.yaml 
