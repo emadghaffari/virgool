@@ -1,5 +1,7 @@
 package conf
 
+import "time"
+
 // GlobalConfigs var
 var GlobalConfigs GlobalConfiguration
 
@@ -30,6 +32,7 @@ type GlobalConfiguration struct {
 	Jaeger            Jaeger
 	Kafka             Kafka
 	JWT               JWT
+	ELK               ELK
 }
 
 // DBConfiguration struct
@@ -101,4 +104,12 @@ type JWT struct {
 // Topic struct
 type Topic struct {
 	Notif string `yaml:"kafka.topics.notif"`
+}
+
+// ELK , elasticsearch - kibana - logstash
+type ELK struct {
+	URLs            []string      `yaml:"elk.urls"`
+	Username        string        `yaml:"elk.username"`
+	Password        string        `yaml:"elk.password"`
+	HealthCheckTime time.Duration `yaml:"elk.health_check"`
 }

@@ -13,6 +13,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/oklog/oklog v0.3.2
+	github.com/olivere/elastic/v7 v7.0.22
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.9.0
@@ -21,6 +22,8 @@ require (
 	github.com/sirupsen/logrus v1.8.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
+	github.com/thedevsaddam/gojsonq v2.3.0+incompatible
+	github.com/thedevsaddam/gojsonq/v2 v2.5.2 // indirect
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
 	github.com/uber/jaeger-lib v2.4.0+incompatible
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d
