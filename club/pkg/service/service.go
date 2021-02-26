@@ -2,7 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/opentracing/opentracing-go"
+
+	"github.com/emadghaffari/virgool/club/database/mysql"
 	"github.com/emadghaffari/virgool/club/model"
 )
 
@@ -16,8 +20,23 @@ type ClubService interface {
 type basicClubService struct{}
 
 func (b *basicClubService) Get(ctx context.Context, id string, token string) (result string, err error) {
-	// TODO implement the business logic of Get
-	return result, err
+	// start get-post trace
+	tracer := opentracing.GlobalTracer()
+	span := tracer.StartSpan("get-point")
+	defer span.Finish()
+
+	// begins a transaction
+	tx := mysql.Database.GetDatabase().Begin()
+
+	// find the user with username or email
+	point := model.Point{}
+	if err := tx.Table("points").Where("user_id = ?", id).First(&point).Error; err != nil {
+		span.SetTag("Error", err.Error())
+		return "", fmt.Errorf(err.Error())
+	}
+	tx.Commit()
+
+	return fmt.Sprintf("%d", point.Point), err
 }
 
 // NewBasicClubService returns a naive, stateless implementation of ClubService.
