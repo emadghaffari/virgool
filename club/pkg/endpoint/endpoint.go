@@ -3,9 +3,10 @@ package endpoint
 import (
 	"context"
 
+	endpoint "github.com/go-kit/kit/endpoint"
+
 	model "github.com/emadghaffari/virgool/club/model"
 	service "github.com/emadghaffari/virgool/club/pkg/service"
-	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 type GetRequest struct {
@@ -50,10 +51,10 @@ func (e Endpoints) Get(ctx context.Context, id string, token string) (result str
 }
 
 type IndexRequest struct {
-	From   int32       `json:"from"`
-	Size   int32       `json:"size"`
-	Filter model.Query `json:"filter"`
-	Token  string      `json:"token"`
+	From   int32          `json:"from"`
+	Size   int32          `json:"size"`
+	Filter []*model.Query `json:"filter"`
+	Token  string         `json:"token"`
 }
 
 type IndexResponse struct {
@@ -76,7 +77,7 @@ func (r IndexResponse) Failed() error {
 	return r.Err
 }
 
-func (e Endpoints) Index(ctx context.Context, from int32, size int32, filter model.Query, token string) (results []model.Point, err error) {
+func (e Endpoints) Index(ctx context.Context, from int32, size int32, filter []*model.Query, token string) (results []model.Point, err error) {
 	request := IndexRequest{
 		Filter: filter,
 		From:   from,

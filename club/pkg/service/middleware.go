@@ -55,7 +55,7 @@ func (l loggingMiddleware) Get(ctx context.Context, id string, token string) (re
 	return l.next.Get(context.WithValue(ctx, model.User, user), id, token)
 }
 
-func (l loggingMiddleware) Index(ctx context.Context, from int32, size int32, filter model.Query, token string) (results []model.Point, err error) {
+func (l loggingMiddleware) Index(ctx context.Context, from int32, size int32, filter []*model.Query, token string) (results []model.Point, err error) {
 	defer func() {
 		l.logger.Log("method", "Index", "from", from, "size", size, "filter", filter, "token", token, "results", results, "err", err)
 	}()
