@@ -28,12 +28,6 @@ type vault struct {
 }
 
 func (v *vault) New(config conf.GlobalConfiguration) error {
-	// config.Confs.Notifs.Path = "blog/notificator"
-	// config.Confs.Users.Host = "localhost"
-	// config.Confs.Users.Path = "blog/users"
-	// config.Confs.JWT.Path = "blog/jwt/secret"
-	// config.Confs.Redis.Path = "blog/redis"
-
 	once.Do(func() {
 		confs := &api.Config{
 			Address: config.Vault.Address,
