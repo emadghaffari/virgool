@@ -13,6 +13,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.4
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/oklog/oklog v0.3.2
+	github.com/olivere/elastic/v7 v7.0.22
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.9.0
